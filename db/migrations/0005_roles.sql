@@ -40,6 +40,9 @@ GRANT INSERT, UPDATE ON TABLE
     perfiles
 TO relevo_escritor;
 
+-- La reindexación idempotente del corpus reemplaza chunks cuando cambia el hash.
+GRANT DELETE ON TABLE documentos, chunks TO relevo_escritor;
+
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO relevo_escritor;
 
 -- El usuario de desarrollo (relevo) puede impersonar los roles en pruebas.
