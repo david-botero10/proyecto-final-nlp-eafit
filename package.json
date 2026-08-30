@@ -7,15 +7,18 @@
     "dev": "next dev",
     "build": "next build",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "mcp": "tsx mcp/servidor.ts"
   },
   "engines": {
     "node": ">=24"
   },
   "dependencies": {
     "@ai-sdk/react": "^2.0.252",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "ai": "^5.0.249",
     "next": "^15.5.24",
+    "postgres": "^3.4.8",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "zod": "^4.5.4"
@@ -34,6 +37,7 @@
     "eslint-config-next": "^15.5.24",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"
   }
