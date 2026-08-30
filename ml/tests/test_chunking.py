@@ -76,3 +76,16 @@ def test_cartilla_ventanas_con_solape_y_ref_de_pagina():
     t1 = chunks[1].texto.split()
     assert t0[-100:] == t1[:100]
     assert chunks[1].ref == "p. 15"
+
+def test_html_utf8_con_bom_sin_charset_no_produce_mojibake():
+    """Regresión: Función Pública sirve UTF-8 con BOM y sin charset declarado."""
+    html = (
+        "<html><body><p>ARTÍCULO 1°. Objeto de la ley.</p>"
+        "<p>El artículo regula la jornada laboral.</p>"
+        "<p>Artículo 2°. Vigencia y derogatorias.</p></body></html>"
+    ).encode("utf-8-sig")
+    texto = extraer_texto_html(html)
+    assert "ARTÍCULO 1°" in texto
+    assert "Ã" not in texto
+    chunks = chunkear_ley(texto, fuente_id="ley_prueba")
+    assert [c.ref for c in chunks] == ["art. 1", "art. 2"]

@@ -22,6 +22,15 @@ def extraer_texto_html(html: bytes | str) -> str:
     BeautifulSoup decodifica entidades. Se eliminan script/style/nav y
     líneas de chrome típicas del Senado / Gestor normativo.
     """
+    if isinstance(html, bytes):
+        # Función Pública sirve UTF-8 con BOM sin charset declarado y el
+        # sniffing de BeautifulSoup lo confunde con cp1252 (mojibake que
+        # rompe el regex de artículos). UTF-8 estricto primero; si no es
+        # UTF-8 válido (p. ej. Senado en latin-1), que BS4 adivine como antes.
+        try:
+            html = html.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            pass
     soup = BeautifulSoup(html, "lxml")
     for etiqueta in soup(["script", "style", "nav", "noscript", "iframe"]):
         etiqueta.decompose()
