@@ -1,0 +1,44 @@
+# Dependencias y builds
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# Secretos y entorno (nunca al repo)
+.env
+.env.*
+!.env.example
+
+# Datos y modelos pesados
+corpus/raw/
+corpus/cache/
+ml/models/
+ml/checkpoints/
+ml/runs/
+*.safetensors
+*.bin
+*.gguf
+.hf_cache/
+
+# Orca / agentes
+.atl/
+.orca/
+.pi/
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
