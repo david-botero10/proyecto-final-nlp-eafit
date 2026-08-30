@@ -1,0 +1,13 @@
+# Dependencias ligeras para los gates unificados (ruff + pytest de db/ y ml/).
+# No incluye torch ni FlagEmbedding: los tests de ml no cargan bge-m3.
+# La indexación real usa ml/requirements.txt en un venv aparte.
+psycopg[binary]>=3.2
+Faker>=30.0
+pytest>=8.0
+ruff>=0.8
+httpx>=0.27.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+pypdf>=5.0.0
+numpy>=1.26.0
+pgvector>=0.3.0

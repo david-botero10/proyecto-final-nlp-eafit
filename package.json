@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "lint": "eslint .",
-    "test": "vitest run",
+    "lint": "node scripts/gates.mjs lint",
+    "test": "node scripts/gates.mjs test",
     "mcp": "tsx mcp/servidor.ts"
   },
   "engines": {
