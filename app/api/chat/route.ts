@@ -1,13 +1,14 @@
 import {
-  cuerpoChatSchema,
-  mensajeSimulado,
-  textoUltimoUsuario,
-} from "@/lib/cuerpo-chat";
-import {
   createUIMessageStreamResponse,
   simulateReadableStream,
   type UIMessageChunk,
 } from "ai";
+import { claveConfigurada } from "@/lib/agente/modelo";
+import {
+  cuerpoChatSchema,
+  mensajeSimulado,
+  textoUltimoUsuario,
+} from "@/lib/cuerpo-chat";
 
 export async function POST(peticion: Request) {
   let json: unknown;
@@ -36,6 +37,15 @@ export async function POST(peticion: Request) {
     );
   }
 
+  if (!claveConfigurada()) {
+    return respuestaSimulada(pregunta);
+  }
+
+  const { responderConAsistente } = await import("@/lib/agente/asistente");
+  return responderConAsistente(analizado.data, pregunta);
+}
+
+function respuestaSimulada(pregunta: string): Response {
   const texto = mensajeSimulado(pregunta);
   const chunks: UIMessageChunk[] = [
     { type: "start" },

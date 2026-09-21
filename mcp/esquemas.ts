@@ -99,6 +99,7 @@ export const buscarNormaEntrada = z.object({
 });
 
 export const buscarNormaSalida = z.object({
+  modo: z.enum(["hibrida", "lexica"]),
   resultados: z.array(
     z.object({
       chunk_id: z.number().int(),
