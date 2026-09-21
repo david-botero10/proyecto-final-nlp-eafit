@@ -35,5 +35,5 @@ export function textoUltimoUsuario(cuerpo: CuerpoChat): string | null {
 }
 
 export function mensajeSimulado(pregunta: string): string {
-  return `Soy Relevo. Aún no tengo modelo conectado (llega en la semana 3), pero mi interfaz ya funciona. Me preguntaste: "${pregunta}"`;
+  return `Soy Relevo. Aún no tengo modelo conectado (llega en la semana 3), pero mi interfaz ya funciona. Para usar Grok, configura XAI_API_KEY. Me preguntaste: "${pregunta}"`;
 }

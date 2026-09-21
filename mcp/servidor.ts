@@ -120,15 +120,15 @@ export function crearServidor(sql: Sql): McpServer {
     {
       title: "Buscar norma",
       description:
-        "Búsqueda léxica (tsvector español + unaccent) sobre el corpus normativo.",
+        "Búsqueda híbrida del corpus normativo (vector bge-m3 + léxica en español, fusión RRF y re-ranking si el servicio responde). Si el servicio de embeddings no responde, queda solo la búsqueda léxica. Devuelve modo hibrida o lexica.",
       inputSchema: buscarNormaEntrada,
       outputSchema: buscarNormaSalida,
       annotations: ANOTACION_LECTURA,
     },
     async (filtros) => {
       try {
-        const resultados = await buscarNorma(sql, filtros);
-        return resultadoOk({ resultados });
+        const salida = await buscarNorma(sql, filtros);
+        return resultadoOk(salida);
       } catch (error) {
         return resultadoError(mensajeSeguro(error));
       }

@@ -3,6 +3,11 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useState } from "react";
+import {
+  indicadorDePartes,
+  MensajeAsistente,
+  type ParteVista,
+} from "@/components/mensaje-asistente";
 
 const EJEMPLOS = [
   "¿Quién cubre el turno de la noche el sábado?",
@@ -17,6 +22,20 @@ function textoDeMensaje(mensaje: UIMessage): string {
     .join("");
 }
 
+function partesVista(mensaje: UIMessage): ParteVista[] {
+  return mensaje.parts.map((parte) => {
+    const suelto = parte as ParteVista;
+    return {
+      type: suelto.type,
+      text: suelto.text,
+      state: suelto.state,
+      toolName: suelto.toolName,
+      data: suelto.data,
+      output: suelto.output,
+    };
+  });
+}
+
 export function Chat() {
   const [entrada, setEntrada] = useState("");
   const { messages, sendMessage, status } = useChat({
@@ -24,6 +43,11 @@ export function Chat() {
   });
 
   const ocupado = status === "submitted" || status === "streaming";
+  const hayAvisoEnMensaje = messages.some(
+    (mensaje) =>
+      mensaje.role === "assistant" &&
+      indicadorDePartes(partesVista(mensaje)) !== null,
+  );
 
   function enviar(texto: string) {
     const recorte = texto.trim();
@@ -73,17 +97,21 @@ export function Chat() {
                   className={
                     esUsuario
                       ? "ml-auto max-w-[85%] rounded-2xl bg-stone-800 px-4 py-3 text-sm text-white"
-                      : "mr-auto max-w-[85%] rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800"
+                      : "mr-auto w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800"
                   }
                 >
-                  {textoDeMensaje(mensaje)}
+                  {esUsuario ? (
+                    textoDeMensaje(mensaje)
+                  ) : (
+                    <MensajeAsistente parts={partesVista(mensaje)} />
+                  )}
                 </li>
               );
             })}
           </ol>
         )}
 
-        {ocupado ? (
+        {ocupado && !hayAvisoEnMensaje ? (
           <p className="text-sm text-stone-500" aria-live="polite">
             pensando
           </p>
