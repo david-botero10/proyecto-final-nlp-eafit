@@ -1,0 +1,228 @@
+{
+  "n": 65,
+  "modelo": "Qwen/Qwen3.5-0.8B",
+  "versiones": {
+    "base": {
+      "n": 65,
+      "exactitud_empleado": 0.8,
+      "exactitud_turno": 0.36923076923076925,
+      "exactitud_accion": 0.5538461538461539,
+      "exactitud_justificacion": 0.5384615384615384,
+      "f1_fechas": 0.19181929181929186,
+      "json_valido": 0.9076923076923077,
+      "exactitud_total": 0.03076923076923077
+    },
+    "v1": {
+      "n": 65,
+      "exactitud_empleado": 1.0,
+      "exactitud_turno": 1.0,
+      "exactitud_accion": 0.8461538461538461,
+      "exactitud_justificacion": 0.9846153846153847,
+      "f1_fechas": 0.8461538461538461,
+      "json_valido": 1.0,
+      "exactitud_total": 0.7692307692307693
+    },
+    "v2": {
+      "n": 65,
+      "exactitud_empleado": 1.0,
+      "exactitud_turno": 1.0,
+      "exactitud_accion": 0.9692307692307692,
+      "exactitud_justificacion": 0.9846153846153847,
+      "f1_fechas": 0.8461538461538461,
+      "json_valido": 1.0,
+      "exactitud_total": 0.8307692307692308
+    }
+  },
+  "intervalos": {
+    "base": {
+      "media": 0.03076923076923077,
+      "bajo": 0.0,
+      "alto": 0.07692307692307693,
+      "remuestreos": 1000,
+      "semilla": 42
+    },
+    "v1": {
+      "media": 0.7692307692307693,
+      "bajo": 0.6615384615384615,
+      "alto": 0.8769230769230769,
+      "remuestreos": 1000,
+      "semilla": 42
+    },
+    "v2": {
+      "media": 0.8307692307692308,
+      "bajo": 0.7384615384615385,
+      "alto": 0.9076923076923077,
+      "remuestreos": 1000,
+      "semilla": 42
+    }
+  },
+  "subgrupos": {
+    "relativa": {
+      "base": {
+        "n": 57,
+        "exactitud_empleado": 0.8245614035087719,
+        "exactitud_turno": 0.40350877192982454,
+        "exactitud_accion": 0.5263157894736842,
+        "exactitud_justificacion": 0.5964912280701754,
+        "f1_fechas": 0.18365357839042049,
+        "json_valido": 0.8947368421052632,
+        "exactitud_total": 0.017543859649122806
+      },
+      "v1": {
+        "n": 57,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 0.9122807017543859,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 0.9122807017543859,
+        "json_valido": 1.0,
+        "exactitud_total": 0.8245614035087719
+      },
+      "v2": {
+        "n": 57,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 0.9824561403508771,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 0.9122807017543859,
+        "json_valido": 1.0,
+        "exactitud_total": 0.8947368421052632
+      }
+    },
+    "absoluta": {
+      "base": {
+        "n": 5,
+        "exactitud_empleado": 0.8,
+        "exactitud_turno": 0.0,
+        "exactitud_accion": 1.0,
+        "exactitud_justificacion": 0.0,
+        "f1_fechas": 0.2,
+        "json_valido": 1.0,
+        "exactitud_total": 0.0
+      },
+      "v1": {
+        "n": 5,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 0.0,
+        "exactitud_justificacion": 0.8,
+        "f1_fechas": 0.0,
+        "json_valido": 1.0,
+        "exactitud_total": 0.0
+      },
+      "v2": {
+        "n": 5,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 0.8,
+        "exactitud_justificacion": 0.8,
+        "f1_fechas": 0.0,
+        "json_valido": 1.0,
+        "exactitud_total": 0.0
+      }
+    },
+    "sin_fecha": {
+      "base": {
+        "n": 3,
+        "exactitud_empleado": 0.3333333333333333,
+        "exactitud_turno": 0.3333333333333333,
+        "exactitud_accion": 0.3333333333333333,
+        "exactitud_justificacion": 0.3333333333333333,
+        "f1_fechas": 0.3333333333333333,
+        "json_valido": 1.0,
+        "exactitud_total": 0.3333333333333333
+      },
+      "v1": {
+        "n": 3,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 1.0,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 1.0,
+        "json_valido": 1.0,
+        "exactitud_total": 1.0
+      },
+      "v2": {
+        "n": 3,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 1.0,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 1.0,
+        "json_valido": 1.0,
+        "exactitud_total": 1.0
+      }
+    },
+    "quitar": {
+      "base": {
+        "n": 20,
+        "exactitud_empleado": 0.85,
+        "exactitud_turno": 0.15,
+        "exactitud_accion": 0.95,
+        "exactitud_justificacion": 0.35,
+        "f1_fechas": 0.23928571428571427,
+        "json_valido": 0.95,
+        "exactitud_total": 0.0
+      },
+      "v1": {
+        "n": 20,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 0.5,
+        "exactitud_justificacion": 0.95,
+        "f1_fechas": 0.75,
+        "json_valido": 1.0,
+        "exactitud_total": 0.5
+      },
+      "v2": {
+        "n": 20,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 0.9,
+        "exactitud_justificacion": 0.95,
+        "f1_fechas": 0.75,
+        "json_valido": 1.0,
+        "exactitud_total": 0.7
+      }
+    },
+    "resto": {
+      "base": {
+        "n": 45,
+        "exactitud_empleado": 0.7777777777777778,
+        "exactitud_turno": 0.4666666666666667,
+        "exactitud_accion": 0.37777777777777777,
+        "exactitud_justificacion": 0.6222222222222222,
+        "f1_fechas": 0.17072310405643742,
+        "json_valido": 0.8888888888888888,
+        "exactitud_total": 0.044444444444444446
+      },
+      "v1": {
+        "n": 45,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 1.0,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 0.8888888888888888,
+        "json_valido": 1.0,
+        "exactitud_total": 0.8888888888888888
+      },
+      "v2": {
+        "n": 45,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 1.0,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 0.8888888888888888,
+        "json_valido": 1.0,
+        "exactitud_total": 0.8888888888888888
+      }
+    }
+  },
+  "grok_pendiente": true,
+  "campos": [
+    "empleado",
+    "turno",
+    "accion",
+    "justificacion"
+  ]
+}

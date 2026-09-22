@@ -1,0 +1,20 @@
+{"id":"c01","pregunta":"¿Cuánto pagan de recargo si alguien trabaja de noche?","refs_esperadas":["art. 168"]}
+{"id":"c02","pregunta":"¿Desde qué hora cuenta como trabajo de noche?","refs_esperadas":["art. 160"]}
+{"id":"c03","pregunta":"Si alguien cubre el domingo, ¿eso se paga con recargo?","refs_esperadas":["art. 179"]}
+{"id":"c04","pregunta":"¿Y si el turno cae en un día festivo, cómo se remunera?","refs_esperadas":["art. 179","art. 177"]}
+{"id":"c05","pregunta":"¿De cuántas horas es la jornada máxima a la semana?","refs_esperadas":["art. 161"]}
+{"id":"c06","pregunta":"¿En qué quedó la rebaja de la jornada de la ley 2101?","refs_esperadas":["art. 161"]}
+{"id":"c07","pregunta":"¿En cuántos días de la semana se puede repartir la jornada?","refs_esperadas":["art. 161"]}
+{"id":"c08","pregunta":"¿Cuántos días de vacaciones dan al año?","refs_esperadas":["art. 186"]}
+{"id":"c09","pregunta":"¿Quién decide en qué fecha salgo a vacaciones?","refs_esperadas":["art. 187"]}
+{"id":"c10","pregunta":"¿Se pueden pagar las vacaciones en plata en vez de salir?","refs_esperadas":["art. 189"]}
+{"id":"c11","pregunta":"¿Puedo acumular las vacaciones de un año para el otro?","refs_esperadas":["art. 190"]}
+{"id":"c12","pregunta":"¿Cuánto dura la licencia de maternidad?","refs_esperadas":["art. 236"]}
+{"id":"c13","pregunta":"¿Pueden echar a una trabajadora porque está embarazada?","refs_esperadas":["art. 239"]}
+{"id":"c14","pregunta":"¿Hay una hora de lactancia durante la jornada?","refs_esperadas":["art. 238"]}
+{"id":"c15","pregunta":"¿Qué descanso hay si se presenta un aborto?","refs_esperadas":["art. 237"]}
+{"id":"c16","pregunta":"¿Cómo funciona un contrato a término fijo?","refs_esperadas":["art. 46"]}
+{"id":"c17","pregunta":"¿El contrato a término indefinido es la regla general?","refs_esperadas":["art. 47"]}
+{"id":"c18","pregunta":"¿Qué tiene que tener un contrato de trabajo para que exista?","refs_esperadas":["art. 22","art. 23"]}
+{"id":"c19","pregunta":"¿Es obligatorio dar el descanso del domingo?","refs_esperadas":["art. 172","art. 179"]}
+{"id":"c20","pregunta":"¿Hay oficios a los que no les aplica el tope de la jornada?","refs_esperadas":["art. 162"]}

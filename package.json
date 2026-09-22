@@ -11,7 +11,11 @@
     "mcp": "tsx mcp/servidor.ts",
     "auditor:dev": "tsx auditor/servidor.ts",
     "embed:dev": "node lib/agente/embed-dev.mjs",
-    "extractor:dev": "../relevo-gpu-venv/Scripts/python.exe ml/servir_extractor.py"
+    "extractor:dev": "../relevo-gpu-venv/Scripts/python.exe ml/servir_extractor.py",
+    "eval:extraccion": "../relevo-gpu-venv/Scripts/python.exe -u evaluacion/evaluar_extraccion.py",
+    "eval:citas": "tsx evaluacion/evaluar_citas.ts",
+    "eval:auditor": "tsx evaluacion/evaluar_auditor.ts",
+    "eval:aprobaciones": "tsx evaluacion/evaluar_aprobaciones.ts"
   },
   "engines": {
     "node": ">=24"

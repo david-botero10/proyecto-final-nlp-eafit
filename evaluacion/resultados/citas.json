@@ -1,0 +1,397 @@
+{
+  "n": 20,
+  "modos": {
+    "hibrida": 20,
+    "lexica": 0
+  },
+  "macro": {
+    "recall_at_3": 0.975,
+    "recall_at_5": 1,
+    "recall_at_8": 1,
+    "mrr": 0.9333333333333333
+  },
+  "juez_pendiente": true,
+  "fidelidad_macro": null,
+  "filas": [
+    {
+      "id": "c01",
+      "modo": "hibrida",
+      "refs": [
+        "art. 168",
+        "art. 169",
+        "art. 179",
+        "art. 179",
+        "art. 134",
+        "art. 170",
+        "art. 167",
+        "art. 161"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c02",
+      "modo": "hibrida",
+      "refs": [
+        "art. 160",
+        "art. 160",
+        "art. 168",
+        "art. 169",
+        "art. 167",
+        "art. 22",
+        "art. 164",
+        "art. 161"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c03",
+      "modo": "hibrida",
+      "refs": [
+        "art. 179",
+        "art. 179",
+        "art. 168",
+        "art. 169",
+        "art. 173",
+        "art. 180",
+        "art. 182",
+        "art. 185"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c04",
+      "modo": "hibrida",
+      "refs": [
+        "art. 179",
+        "art. 177",
+        "art. 178",
+        "art. 179",
+        "art. 180",
+        "art. 173",
+        "art. 170",
+        "art. 192"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c05",
+      "modo": "hibrida",
+      "refs": [
+        "art. 161",
+        "art. 161",
+        "art. 165",
+        "art. 161",
+        "art. 166",
+        "art. 164",
+        "art. 158",
+        "art. 167"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c06",
+      "modo": "hibrida",
+      "refs": [
+        "art. 161",
+        "art. 161",
+        "art. 11",
+        "art. 179",
+        "art. 162",
+        "art. 161",
+        "art. 252",
+        "art. 261"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c07",
+      "modo": "hibrida",
+      "refs": [
+        "art. 161",
+        "art. 161",
+        "art. 165",
+        "art. 167",
+        "art. 164",
+        "art. 161",
+        "art. 46",
+        "art. 183"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c08",
+      "modo": "hibrida",
+      "refs": [
+        "art. 186",
+        "art. 190",
+        "art. 102",
+        "art. 187",
+        "art. 310",
+        "art. 192",
+        "art. 189",
+        "art. 172"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c09",
+      "modo": "hibrida",
+      "refs": [
+        "art. 187",
+        "art. 191",
+        "art. 192",
+        "art. 102",
+        "art. 190",
+        "art. 189",
+        "art. 177",
+        "art. 186"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c10",
+      "modo": "hibrida",
+      "refs": [
+        "art. 189",
+        "art. 192",
+        "art. 234",
+        "art. 138",
+        "art. 184",
+        "art. 134",
+        "art. 102",
+        "art. 310"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c11",
+      "modo": "hibrida",
+      "refs": [
+        "art. 190",
+        "art. 187",
+        "art. 102",
+        "art. 192",
+        "art. 191",
+        "art. 186",
+        "art. 189",
+        "art. 188"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c12",
+      "modo": "hibrida",
+      "refs": [
+        "art. 236",
+        "art. 236 (2)",
+        "art. 238",
+        "art. 237",
+        "art. 186",
+        "art. 239",
+        "art. 240",
+        "art. 161"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c13",
+      "modo": "hibrida",
+      "refs": [
+        "art. 239",
+        "art. 240",
+        "art. 237",
+        "art. 241",
+        "art. 241",
+        "art. 236",
+        "art. 59",
+        "art. 17"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c14",
+      "modo": "hibrida",
+      "refs": [
+        "art. 238",
+        "art. 167",
+        "art. 164",
+        "art. 161",
+        "art. 236",
+        "art. 161",
+        "art. 161",
+        "art. 165"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c15",
+      "modo": "hibrida",
+      "refs": [
+        "art. 237",
+        "art. 238",
+        "art. 236",
+        "art. 310",
+        "art. 241",
+        "art. 183",
+        "art. 239",
+        "art. 172"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c16",
+      "modo": "hibrida",
+      "refs": [
+        "art. 81",
+        "art. 81",
+        "art. 46",
+        "art. 46",
+        "art. 47",
+        "art. 47",
+        "art. 64",
+        "art. 45"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 0.3333333333333333,
+      "fidelidad": null
+    },
+    {
+      "id": "c17",
+      "modo": "hibrida",
+      "refs": [
+        "art. 47",
+        "art. 47",
+        "art. 46",
+        "art. 46",
+        "art. 64",
+        "art. 45",
+        "art. 5",
+        "art. 16"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c18",
+      "modo": "hibrida",
+      "refs": [
+        "art. 23",
+        "art. 39",
+        "art. 89",
+        "art. 22",
+        "art. 46",
+        "art. 42",
+        "art. 37",
+        "art. 45"
+      ],
+      "recall_at_3": 0.5,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c19",
+      "modo": "hibrida",
+      "refs": [
+        "art. 179",
+        "art. 179",
+        "art. 172",
+        "art. 181",
+        "art. 161",
+        "art. 185",
+        "art. 180",
+        "art. 173"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": null
+    },
+    {
+      "id": "c20",
+      "modo": "hibrida",
+      "refs": [
+        "art. 165",
+        "art. 22",
+        "art. 162",
+        "art. 161",
+        "art. 161",
+        "art. 167",
+        "art. 42",
+        "art. 229"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 0.3333333333333333,
+      "fidelidad": null
+    }
+  ]
+}
