@@ -230,13 +230,17 @@ describe.skipIf(!bdActiva)("tools MCP de lectura", () => {
       | { isError?: boolean; content?: unknown; structuredContent?: unknown }
       | undefined;
     try {
-      resultado = await cliente.callTool({
+      resultado = (await cliente.callTool({
         name: "consultar_turnos",
         arguments: {
           desde: "2026-08-10",
           hasta: "2026-08-01",
         },
-      });
+      })) as {
+        isError?: boolean;
+        content?: unknown;
+        structuredContent?: unknown;
+      };
     } catch (error) {
       lanzado = error;
     }

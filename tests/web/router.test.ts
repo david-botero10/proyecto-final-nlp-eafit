@@ -65,6 +65,8 @@ describe("system prompt", () => {
     expect(texto).toContain("orden_escritura");
     expect(texto).toContain("Pide cambiar un turno.");
     expect(texto).toContain("[1]");
-    expect(texto).toContain("todavía no está disponible");
+    expect(texto).toContain("te propongo");
+    expect(texto).toContain("revisa la tarjeta");
+    expect(texto).not.toContain("no está disponible");
   });
 });
