@@ -2,12 +2,21 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   indicadorDePartes,
   MensajeAsistente,
   type ParteVista,
 } from "@/components/mensaje-asistente";
+
+const USUARIOS = [
+  { id: "coordinadora_enfermeria", etiqueta: "Coordinadora de enfermería" },
+  { id: "jefe_vigilancia", etiqueta: "Jefe de vigilancia" },
+  { id: "gerencia", etiqueta: "Gerencia" },
+] as const;
+
+const CLAVE_USUARIO = "relevo.usuario";
+const CLAVE_CONVERSACION = "relevo.conversacion_id";
 
 const EJEMPLOS = [
   "¿Quién cubre el turno de la noche el sábado?",
@@ -38,9 +47,47 @@ function partesVista(mensaje: UIMessage): ParteVista[] {
 
 export function Chat() {
   const [entrada, setEntrada] = useState("");
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+  const [usuario, setUsuario] = useState<string>(USUARIOS[0].id);
+  const usuarioRef = useRef(usuario);
+  const convRef = useRef<string | null>(null);
+  const transport = useRef(
+    new DefaultChatTransport({
+      api: "/api/chat",
+      prepareSendMessagesRequest: ({ messages }) => ({
+        body: {
+          messages,
+          usuario: usuarioRef.current,
+          conversacion_id: convRef.current,
+        },
+      }),
+    }),
+  );
+  const { messages, sendMessage, status, setMessages } = useChat({
+    transport: transport.current,
   });
+
+  useEffect(() => {
+    const guardado = window.localStorage.getItem(CLAVE_USUARIO);
+    if (guardado && USUARIOS.some((item) => item.id === guardado)) {
+      usuarioRef.current = guardado;
+      setUsuario(guardado);
+    }
+    const conversacion = window.localStorage.getItem(CLAVE_CONVERSACION);
+    if (conversacion && !convRef.current) {
+      convRef.current = conversacion;
+      void cargarHistorial(conversacion, usuarioRef.current, setMessages);
+    }
+  }, [setMessages]);
+
+  function cambiarUsuario(siguiente: string) {
+    usuarioRef.current = siguiente;
+    setUsuario(siguiente);
+    const nueva = crypto.randomUUID();
+    convRef.current = nueva;
+    window.localStorage.setItem(CLAVE_USUARIO, siguiente);
+    window.localStorage.setItem(CLAVE_CONVERSACION, nueva);
+    setMessages([]);
+  }
 
   const ocupado = status === "submitted" || status === "streaming";
   const hayAvisoEnMensaje = messages.some(
@@ -54,17 +101,40 @@ export function Chat() {
     if (!recorte || ocupado) {
       return;
     }
+    if (!convRef.current) {
+      convRef.current = crypto.randomUUID();
+      window.localStorage.setItem(CLAVE_CONVERSACION, convRef.current);
+    }
+    window.localStorage.setItem(CLAVE_USUARIO, usuarioRef.current);
     sendMessage({ text: recorte });
     setEntrada("");
   }
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-4 py-6">
-      <header className="border-b border-stone-200 pb-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Relevo</h1>
-        <p className="mt-1 text-sm text-stone-500">
-          Asistente de turnos y ausencias
-        </p>
+      <header className="flex items-start justify-between gap-4 border-b border-stone-200 pb-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Relevo</h1>
+          <p className="mt-1 text-sm text-stone-500">
+            Asistente de turnos y ausencias
+          </p>
+        </div>
+        <label className="flex items-center gap-2 text-xs text-stone-500">
+          <span>Usuario</span>
+          <select
+            aria-label="Usuario"
+            className="rounded-md border border-stone-300 bg-white px-2 py-1 text-xs text-stone-700"
+            value={usuario}
+            disabled={ocupado}
+            onChange={(evento) => cambiarUsuario(evento.target.value)}
+          >
+            {USUARIOS.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.etiqueta}
+              </option>
+            ))}
+          </select>
+        </label>
       </header>
 
       <main className="flex flex-1 flex-col gap-4 py-6">
@@ -142,4 +212,46 @@ export function Chat() {
       </form>
     </div>
   );
+}
+
+async function cargarHistorial(
+  conversacionId: string,
+  usuarioActual: string,
+  setMessages: (mensajes: UIMessage[]) => void,
+): Promise<void> {
+  try {
+    const respuesta = await fetch(
+      `/api/chat?conversacion_id=${conversacionId}&usuario=${encodeURIComponent(usuarioActual)}`,
+    );
+    if (!respuesta.ok) {
+      return;
+    }
+    const datos = (await respuesta.json()) as {
+      mensajes?: { rol?: string; parts?: { type?: string; text?: string }[] }[];
+    };
+    if (!Array.isArray(datos.mensajes) || datos.mensajes.length === 0) {
+      return;
+    }
+    setMessages(
+      datos.mensajes.flatMap((mensaje, indice) => {
+        const rol = mensaje.rol === "assistant" ? "assistant" : "user";
+        const texto = (mensaje.parts ?? [])
+          .filter((parte) => parte.type === "text")
+          .map((parte) => parte.text ?? "")
+          .join("\n");
+        if (texto.length === 0) {
+          return [];
+        }
+        return [
+          {
+            id: `hist-${indice}`,
+            role: rol,
+            parts: [{ type: "text" as const, text: texto }],
+          },
+        ];
+      }),
+    );
+  } catch {
+    // El siguiente turno igual recupera el historial en el servidor.
+  }
 }

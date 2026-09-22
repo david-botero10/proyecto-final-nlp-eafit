@@ -1,6 +1,14 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import type { Span } from "@opentelemetry/api";
+import { SemanticConventions } from "@arizeai/openinference-semantic-conventions";
 import { crearCliente } from "@/lib/db/cliente";
+import {
+  aplicarAlcance,
+  filtrarResultado,
+  type PerfilAlcance,
+} from "@/lib/guardrails/alcance";
+import { jsonCorto, trazarLlamada } from "@/lib/observabilidad/spans";
 import { crearServidor } from "@/mcp/servidor";
 
 let pendiente: Promise<Client> | null = null;
@@ -53,7 +61,7 @@ function textoContenido(contenido: unknown): string {
 }
 
 /** Delega en `cliente.callTool`. No abre otra vía a la base. */
-export async function llamarHerramienta(
+async function llamarMcp(
   nombre: string,
   argumentos: Record<string, unknown>,
 ): Promise<unknown> {
@@ -75,4 +83,46 @@ export async function llamarHerramienta(
     return resultado.structuredContent;
   }
   return { texto: textoContenido(resultado.content) };
+}
+
+function anotarModo(span: Span, resultado: unknown): void {
+  if (!resultado || typeof resultado !== "object" || !("modo" in resultado)) {
+    return;
+  }
+  const modo = (resultado as { modo?: unknown }).modo;
+  if (typeof modo === "string") {
+    span.setAttribute("modo", modo);
+  }
+}
+
+/**
+ * Tool del asistente, con span y alcance por equipo.
+ * El perfil vacío no recorta: así siguen pasando las llamadas internas del flujo.
+ */
+export async function llamarHerramienta(
+  nombre: string,
+  argumentos: Record<string, unknown>,
+  opciones?: { perfil?: PerfilAlcance | null },
+): Promise<unknown> {
+  const ajustado = await aplicarAlcance(
+    nombre,
+    argumentos,
+    opciones?.perfil ?? null,
+    llamarMcp,
+  );
+  if ("error" in ajustado) {
+    return trazarLlamada(nombre, argumentos, async (span) => {
+      span.setAttribute(SemanticConventions.OUTPUT_VALUE, ajustado.error);
+      return { error: ajustado.error };
+    });
+  }
+  return trazarLlamada(nombre, ajustado.args, async (span) => {
+    const resultado = await llamarMcp(nombre, ajustado.args);
+    if (nombre === "buscar_norma") {
+      anotarModo(span, resultado);
+    }
+    const filtrado = filtrarResultado(nombre, resultado, ajustado.roster);
+    span.setAttribute(SemanticConventions.OUTPUT_VALUE, jsonCorto(filtrado));
+    return filtrado;
+  });
 }

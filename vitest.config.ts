@@ -14,6 +14,7 @@ export default defineConfig({
       "tests/web/**/*.test.{ts,tsx}",
       "tests/mcp/**/*.test.ts",
       "tests/auditor/**/*.test.ts",
+      "tests/observabilidad/**/*.test.ts",
     ],
   },
   resolve: {

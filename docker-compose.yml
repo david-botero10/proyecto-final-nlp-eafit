@@ -16,5 +16,12 @@ services:
       retries: 10
       start_period: 10s
 
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    ports:
+      - "6006:6006"
+    environment:
+      PHOENIX_PORT: "6006"
+
 volumes:
   relevo_pgdata:
