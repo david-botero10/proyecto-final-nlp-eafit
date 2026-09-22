@@ -1,0 +1,11 @@
+# Venv de GPU, FUERA del clone (por ejemplo ../relevo-gpu-venv).
+# No reemplaza ml/requirements.txt (ese sigue siendo el de indexación CPU).
+# En Windows, si el wheel de PyPI no trae CUDA:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu128
+torch>=2.6
+transformers>=5.0
+peft>=0.14
+trl>=0.15
+datasets>=3.0
+bitsandbytes>=0.45
+accelerate>=1.2
