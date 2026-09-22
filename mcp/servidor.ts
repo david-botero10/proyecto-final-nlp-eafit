@@ -2,6 +2,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { USUARIO_TARJETA } from "../lib/tipos";
 import { crearCliente, type Sql } from "../lib/db/cliente";
 import {
   buscarNorma,
@@ -9,6 +10,7 @@ import {
   consultarTurnos,
   listarEmpleados,
 } from "./consultas";
+import { crearPropuesta, ErrorPropuesta } from "./escrituras";
 import {
   buscarNormaEntrada,
   buscarNormaSalida,
@@ -16,6 +18,8 @@ import {
   consultarAusenciasSalida,
   consultarTurnosEntrada,
   consultarTurnosSalida,
+  crearPropuestaEntrada,
+  crearPropuestaSalida,
   listarEmpleadosEntrada,
   listarEmpleadosSalida,
 } from "./esquemas";
@@ -41,9 +45,9 @@ function resultadoError(mensaje: string) {
   };
 }
 
-function resultadoOk<T extends Record<string, unknown>>(datos: T) {
+function resultadoOk(datos: object) {
   return {
-    structuredContent: datos,
+    structuredContent: datos as Record<string, unknown>,
     content: [{ type: "text" as const, text: JSON.stringify(datos) }],
   };
 }
@@ -130,6 +134,34 @@ export function crearServidor(sql: Sql): McpServer {
         const salida = await buscarNorma(sql, filtros);
         return resultadoOk(salida);
       } catch (error) {
+        return resultadoError(mensajeSeguro(error));
+      }
+    },
+  );
+
+  servidor.registerTool(
+    "crear_propuesta",
+    {
+      title: "Crear propuesta",
+      description:
+        "Guarda una propuesta pendiente. No escribe turnos ni ausencias: eso solo ocurre cuando una persona aprueba la tarjeta.",
+      inputSchema: crearPropuestaEntrada,
+      outputSchema: crearPropuestaSalida,
+      annotations: { readOnlyHint: false, destructiveHint: false },
+    },
+    async (entrada) => {
+      try {
+        const propuesta = await crearPropuesta(sql, {
+          orden_texto: entrada.orden_texto,
+          extraccion: entrada.extraccion,
+          acciones: entrada.acciones,
+          usuario: USUARIO_TARJETA,
+        });
+        return resultadoOk(propuesta);
+      } catch (error) {
+        if (error instanceof ErrorPropuesta) {
+          return resultadoError(error.message);
+        }
         return resultadoError(mensajeSeguro(error));
       }
     },

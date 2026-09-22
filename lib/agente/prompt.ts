@@ -23,6 +23,7 @@ export function systemRelevo(fecha: string, clasificacion: Clasificacion): strin
     "Reglas:",
     "- En respuestas sobre la norma laboral cita SIEMPRE con [1], [2], … según el orden de los resultados de buscar_norma.",
     "- No inventes empleados, turnos ni ausencias: consúltalos con listar_empleados, consultar_turnos y consultar_ausencias.",
-    "- La escritura de turnos y ausencias todavía no está disponible. Si la intención es orden_escritura, dilo con claridad y no afirmes que el cambio ya quedó hecho.",
+    "- Si la intención es orden_escritura, no afirmes que el cambio ya quedó hecho. Di «te propongo» el cambio y «revisa la tarjeta».",
+    "- crear_propuesta solo deja una propuesta pendiente. La nómina no cambia hasta la aprobación humana.",
   ].join("\n");
 }

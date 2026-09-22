@@ -1,3 +1,6 @@
+import { TarjetaPropuesta } from "@/components/tarjeta-propuesta";
+import type { Propuesta } from "@/lib/tipos";
+
 export type ResultadoFuente = {
   chunk_id: number;
   ref: string | null;
@@ -106,6 +109,31 @@ export function gruposFuentes(parts: ParteVista[]): ResultadoFuente[][] {
   return grupos;
 }
 
+function esPropuesta(valor: unknown): valor is Propuesta {
+  if (!valor || typeof valor !== "object") {
+    return false;
+  }
+  const fila = valor as Partial<Propuesta>;
+  return (
+    typeof fila.propuesta_id === "string" &&
+    typeof fila.orden_texto === "string" &&
+    Array.isArray(fila.acciones) &&
+    fila.extraccion !== undefined &&
+    fila.contexto !== undefined &&
+    fila.contexto !== null
+  );
+}
+
+function propuestasDe(parts: ParteVista[]): Propuesta[] {
+  const propuestas: Propuesta[] = [];
+  for (const parte of parts) {
+    if (parte.type === "data-propuesta" && esPropuesta(parte.data)) {
+      propuestas.push(parte.data);
+    }
+  }
+  return propuestas;
+}
+
 function hrefSeguro(url: string | null): string | null {
   if (!url) {
     return null;
@@ -176,6 +204,7 @@ export function MensajeAsistente({ parts }: { parts: ParteVista[] }) {
   const intencion = intencionDe(parts);
   const aviso = indicadorDePartes(parts);
   const grupos = gruposFuentes(parts);
+  const propuestas = propuestasDe(parts);
 
   return (
     <div>
@@ -192,6 +221,9 @@ export function MensajeAsistente({ parts }: { parts: ParteVista[] }) {
       ) : null}
       {grupos.map((grupo, indice) => (
         <PanelFuentes key={indice} resultados={grupo} />
+      ))}
+      {propuestas.map((propuesta) => (
+        <TarjetaPropuesta key={propuesta.propuesta_id} propuesta={propuesta} />
       ))}
     </div>
   );
