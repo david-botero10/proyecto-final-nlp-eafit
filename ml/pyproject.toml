@@ -13,11 +13,11 @@ src = [".", "corpus_lib"]
 select = ["E", "F", "I", "UP"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["corpus_lib"]
+known-first-party = ["corpus_lib", "extractor", "ordenes"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/html_senado.py" = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "../data"]
