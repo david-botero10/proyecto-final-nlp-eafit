@@ -9,6 +9,7 @@
     "lint": "node scripts/gates.mjs lint",
     "test": "node scripts/gates.mjs test",
     "mcp": "tsx mcp/servidor.ts",
+    "auditor:dev": "tsx auditor/servidor.ts",
     "embed:dev": "node lib/agente/embed-dev.mjs"
   },
   "engines": {
