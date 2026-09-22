@@ -105,10 +105,22 @@ def _sistema() -> str:
     )
 
 
-def _contenido_esperado(esperado: dict | None) -> str:
+def serializar_respuesta(esperado: dict | None) -> str:
+    """JSON de una línea con el contrato, o la cadena null."""
     if esperado is None:
         return "null"
-    return json.dumps(esperado, ensure_ascii=False)
+    limpio = {
+        "empleado": esperado["empleado"],
+        "turno": esperado["turno"],
+        "fechas": list(esperado["fechas"]),
+        "justificacion": esperado["justificacion"],
+        "accion": esperado["accion"],
+    }
+    return json.dumps(limpio, ensure_ascii=False)
+
+
+def _contenido_esperado(esperado: dict | None) -> str:
+    return serializar_respuesta(esperado)
 
 
 def construir_mensajes(fila: dict, con_respuesta: bool) -> list[dict[str, str]]:

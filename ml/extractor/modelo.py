@@ -86,3 +86,35 @@ def cargar_4bit(modelo_id: str):
         raise RuntimeError(f"no se pudo cargar {modelo_id} en 4-bit\n{detalle}")
     modelo.config.use_cache = False
     return modelo, tokenizer
+
+
+def cargar_para_servicio(modelo_id: str):
+    """4-bit en la GPU si hay CUDA; si no, el modelo completo en CPU."""
+    import torch
+    from transformers import AutoTokenizer
+
+    if torch.cuda.is_available():
+        return cargar_4bit(modelo_id)
+
+    tokenizer = AutoTokenizer.from_pretrained(modelo_id)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "right"
+    errores: list[str] = []
+    modelo = None
+    for nombre_clase in ("AutoModelForCausalLM", "AutoModelForImageTextToText"):
+        try:
+            import transformers
+
+            clase = getattr(transformers, nombre_clase)
+            modelo = clase.from_pretrained(modelo_id, torch_dtype=torch.float32)
+            break
+        except (ValueError, TypeError, KeyError, AttributeError) as exc:
+            errores.append(f"{nombre_clase}: {type(exc).__name__}: {exc}")
+    if modelo is None:
+        detalle = "\n".join(errores)
+        raise RuntimeError(f"no se pudo cargar {modelo_id} en CPU\n{detalle}")
+    modelo.to("cpu")
+    modelo.config.use_cache = False
+    modelo.eval()
+    return modelo, tokenizer

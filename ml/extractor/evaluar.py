@@ -105,6 +105,18 @@ def _cargar_local(proveedor: str, adapter: Path, modelo_id: str):
     return modelo, tokenizer
 
 
+def cargar_extractor(adapter: Path | None, modelo_id: str = MODELO_BASE):
+    """Base 4-bit. Si `adapter` no es None, carga ese LoRA encima."""
+    if adapter is None:
+        return _cargar_local("base", Path("."), modelo_id)
+    return _cargar_local("lora", adapter, modelo_id)
+
+
+def generar_extraccion(modelo, tokenizer, fila: dict) -> str:
+    """Texto crudo del extractor para una fila con orden y fecha_referencia."""
+    return _generar_local(modelo, tokenizer, fila)
+
+
 def evaluar_filas(filas: list[dict], completar) -> dict:
     """Corre `completar(fila) -> str` y calcula las métricas."""
     pares: list[ParEval] = []

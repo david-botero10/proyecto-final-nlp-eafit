@@ -10,7 +10,8 @@
     "test": "node scripts/gates.mjs test",
     "mcp": "tsx mcp/servidor.ts",
     "auditor:dev": "tsx auditor/servidor.ts",
-    "embed:dev": "node lib/agente/embed-dev.mjs"
+    "embed:dev": "node lib/agente/embed-dev.mjs",
+    "extractor:dev": "../relevo-gpu-venv/Scripts/python.exe ml/servir_extractor.py"
   },
   "engines": {
     "node": ">=24"
