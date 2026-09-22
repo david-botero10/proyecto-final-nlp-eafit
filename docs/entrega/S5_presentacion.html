@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relevo — Presentación (Semana 5, SI7016)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.7/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.3/mermaid.min.js"></script>
+<style>
+  .reveal { font-family: "Segoe UI", system-ui, sans-serif; }
+  .reveal h1, .reveal h2 { text-transform: none; }
+  .reveal table { font-size: 0.55em; }
+  .reveal pre { font-size: 0.42em; }
+  .reveal .mermaid { background: #fff; }
+  .reveal .mermaid svg { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+<section>
+<script type="text/plain" class="fuente-slide"># Relevo
+
+Agente de turnos para una pyme colombiana.
+Consultar es autónomo. Escribir exige aprobación.
+
+SI7016 · Universidad EAFIT · 2026-2
+Isabel Jurado · Alejandro Silva · David Botero</script>
+<aside class="notes">Abran con el principio, no con la pila. Una frase: la coordinadora habla en coloquial y la nómina no cambia hasta que ella ve la fila. El resto de la charla cabe en doce minutos si la demo ya está caliente. Los números salen del informe, sección 1.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># El problema
+
+Un chat genérico responde.
+Cuando la tarea es **programar un turno**, responder no basta y escribir a ciegas no se puede.
+
+Público: coordinación de turnos, no un perfil técnico.
+Español coloquial: «la otra semana», «el puente», «la mañana».</script>
+<aside class="notes">Caso de la propuesta de la semana 1: clínica, restaurante o vigilancia con rotación. Nosotros fijamos una clínica ficticia. No prometan datos reales: empleados y órdenes son sintéticos, semilla 42.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># El principio
+
+1. Consultar turnos, ausencias y norma: autónomo.
+2. Escribir en la nómina: solo si una persona aprueba la tarjeta.
+3. La tarjeta muestra exactamente las filas que se escriben.
+4. La decisión queda como par de preferencia.</script>
+<aside class="notes">Repitan el 2 y el 3. Es el criterio con el que se defiende la funcionalidad. `ejecutar_propuesta` no es una tool del modelo. Si el auditor no contesta, la tarjeta dice «sin auditar» y el turno sigue.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># Demo
+
+Ocho minutos. Guion: `informe/GUION_DEMO.md`.
+
+1. Perfil de enfermería: quién cubre la noche del sábado.
+2. Recargo nocturno, con el artículo a la vista.
+3. Orden de Doris. La tarjeta trae veredicto.
+4. Se corrige el domingo y se aprueba.
+5. La fila `origen = 'tarjeta'` y el par.
+6. La traza en Phoenix.</script>
+<aside class="notes">No pulsen el ejemplo «Ana»: Ana es de recepción y este perfil debe rechazarla. Doris Herrera Sánchez es de enfermería y el nombre es único. Si no hay clave de xAI, pasen al plan B del guion: no improvisen una respuesta.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># Arquitectura
+
+El asistente conversa. El auditor no.
+MCP habla con los datos. A2A habla entre agentes.
+
+```mermaid
+flowchart LR
+    UI["Chat"] --> AS["Grok 4.6"]
+    AS --> MCP["MCP lectura y propuesta"]
+    AS --> AUD["Auditor A2A"]
+    MCP --> PG["PostgreSQL + pgvector"]
+    AUD --> MCP
+    AS --> EXT["Extractor QLoRA"]
+    PG --> DPO["Pares"]
+    DPO --> EXT
+```</script>
+<aside class="notes">Figura completa en `informe/figuras/componentes.md` y en el informe §4. Tres equipos: enfermería 20, recepción 10, vigilancia 10. Gerencia ve los tres. Un coordinador no propone fuera de su equipo.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># MCP y A2A
+
+**MCP.** Tools con contrato Zod. Lectura con `readOnlyHint`. `ejecutar_propuesta` no está expuesta al modelo.
+
+**A2A.** JSON-RPC `message/send`, sin SDK. Agent Card en `/.well-known/agent.json`.
+
+Domingo 4 de octubre, empleado activo, turno de mañana:
+
+`veredicto: observaciones`
+«El 2026-10-04 es domingo: aplica recargo dominical.»
+Norma: CST art. 179, chunk 193, fuente `cst_pr006`.</script>
+<aside class="notes">Es el mensaje literal del reporte D2, no un ejemplo reconstruido. Errores JSON-RPC en español, del `-32700` al `-32001`. El auditor lee con `relevo_lector`. El informe §5.7 trae el request y el response enteros por si piden el frame.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># RAG con citas
+
+«Recargo nocturno», modo híbrido, 322 ms, re-ranker no cargado (HTTP 501).
+
+| Orden | Artículo | Para qué sirve |
+|---:|---|---|
+| 1 | art. 169 | Base del recargo |
+| 2 | art. 168 | 35 % sobre el diurno |
+| 3 | art. 161 | Jornada y nocturno |
+
+La UI numera Fuentes con enlace al Senado.</script>
+<aside class="notes">Fuente: reporte C1. En léxico puro (reporte B2) «recargo nocturno» abría por el art. 161, y «trabajo nocturno porcentaje» no devolvía nada. Digan esa diferencia. El juez de fidelidad y el recall@k están pendientes: [F1: recall y juez].</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># Tarjeta y auditor
+
+La orden se extrae, se valida y se guarda `pendiente`.
+El auditor contesta antes de que aparezca la tarjeta.
+
+| Veredicto | Cuándo | Qué puede hacer la persona |
+|---|---|---|
+| rechazado | Empleado inválido o solape duro | Corregir o rechazar. Aprobar va deshabilitado |
+| observaciones | Domingo, festivo, noche, más de 6 días o más de 44 h | Decidir informada |
+| aprobado | Todo pasa | Aprobar |
+
+10 escenarios del reporte D2 cayeron en la clase que el caso buscaba.</script>
+<aside class="notes">El tope es 44 h (Ley 2101, desde julio de 2026), aunque el art. 161 indexado hable de 42 h tras la Ley 2466. Díganlo antes de que lo pregunten. Precisión por clase y matriz: [F1: matriz 3×3].</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># Extractor afinado
+
+Qwen3.5-0.8B, QLoRA 4-bit, test congelado n = 65.
+
+| | Base | LoRA v1 |
+|---|---:|---:|
+| Exactitud total | 3,08 % | 76,92 % |
+| Fechas (F1) | 19,18 % | 84,62 % |
+| Acción | 55,38 % | 84,62 % |
+
+Gana en todos los campos. La acción sigue siendo el peor.</script>
+<aside class="notes">Fuente: reporte C3. El 3 % y el 77 % de la spec son ese 3,08 y ese 76,92, redondeados. Es contra el base, no contra Grok: no había clave. Pico de VRAM 2 871 MiB en una 4060 de 8 GB. El error que queda: «no le deje turno el 12 de octubre» salió como ausencia y con otra fecha.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># Ciclo DPO
+
+Tarjeta → decisión → `pares_preferencia` → DPO sobre v1 → mismo test.
+
+Hoy, en la base local, sin re-sembrar:
+
+- 120 decisiones, todas del `simulador`
+- 91 aprobaciones limpias, 29 correcciones
+- 0 decisiones de una persona
+- `usado_en_version` vacío
+- [E2: delta v1 → v2 con intervalo]</script>
+<aside class="notes">La pregunta de la propuesta: ¿un modelo pequeño, afinado con las correcciones de sus usuarios, puede superar al de frontera en esta tarea, sin sacar los datos de la organización? Hoy solo podemos decir que supera a su base. Las 91 aprobaciones no son pares DPO: `rechazada` va null. La señal útil son las 29 correcciones, y son simuladas.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># Observabilidad
+
+OpenTelemetry → Phoenix, puerto 6006, protobuf.
+JSON OTLP recibe HTTP 415 en esta imagen.
+
+El turno de evidencia, sin modelo, dejó el span `relevo.turno`, kind AGENT, status OK.
+
+Guardrails: 400 si el mensaje va vacío o pasa de 2 000 caracteres, 429 a las 30 peticiones por minuto, y una advertencia si la norma no se cita.</script>
+<aside class="notes">Fuente: reporte E1. Si Phoenix está caído el chat sigue y no escupe el error en cada request. En la demo abran la traza del turno que acaban de hacer, no la captura vieja, salvo que el export falle.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># Evaluación
+
+| Métrica | Qué hay hoy | Qué falta |
+|---|---|---|
+| Extracción | 3,08 % → 76,92 %, n = 65 | Intervalo, Grok, v2 |
+| Citas | Híbrido recupera el art. 168 | Recall@k y juez |
+| Auditor | 10 de 10 en la trampa diseñada | Matriz 3×3 |
+| Aprobación | 91/120 simuladas, 0 humanas | Sesiones |
+
+Pruebas con usuarios: pendiente de sesiones.</script>
+<aside class="notes">No conviertan 91/120 en «le atinamos al 76 % de los usuarios». Es el simulador contra la etiqueta del generador. Informe §8. Los marcadores [F1: …] los completa la ola de evaluación.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># Qué no afirmamos
+
+- No hay cartillas del Ministerio: los URL oficiales no respondieron.
+- No hay voz ni despliegue en Vercel.
+- En Windows el QLoRA corrió sin los kernels lineales. Tardó 4 635 s. Los pesos no están en el repo.
+- «Elizabeth» y «Diego» son dos personas. «Ana» no es de enfermería.
+- «De hoy en ocho» está en +7 en el dataset y en +8 en el prompt de Grok. El guion no usa esa frase.</script>
+<aside class="notes">Esta diapositiva es la de las preguntas incómodas. Mejor decirlas ustedes. Informe §10.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># Cierre
+
+Hay un camino de la orden coloquial a una fila con `origen = 'tarjeta'`, con un veredicto que se lee antes de aprobar.
+
+El extractor pequeño aprende la tarea: 3,08 % → 76,92 % contra su base.
+
+Falta medirlo contra Grok, falta el delta de DPO y faltan las sesiones con personas.</script>
+<aside class="notes">Cierren con esas tres frases y paren. El informe, la presentación y el guion están en `informe/`. Licencia MIT.</aside>
+</section>
+<section>
+<script type="text/plain" class="fuente-slide"># Gracias
+
+Isabel Jurado Jaramillo
+Alejandro Silva Zuluaga
+David Botero Londoño
+
+Código sintético, corpus público, licencia MIT.</script>
+<aside class="notes">Si piden reproducir: `README.md`, anexo B del informe. Gates: `npm run lint`, `npm test`, `npm run build`. Python 3.11 para el venv de gates.</aside>
+</section>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script>
+  const renderer = new marked.Renderer();
+  const codigoBase = renderer.code.bind(renderer);
+  renderer.code = function (bloque, infostring, escaped) {
+    const esToken = typeof bloque === "object" && bloque !== null;
+    const lang = ((esToken ? bloque.lang : infostring) || "").trim();
+    const texto = esToken ? bloque.text : bloque;
+    if (lang === "mermaid") {
+      return '<div class="mermaid">' + texto
+        .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "</div>";
+    }
+    return codigoBase(bloque, infostring, escaped);
+  };
+  document.querySelectorAll("script.fuente-slide").forEach((nodo) => {
+    const html = marked.parse(nodo.textContent, { renderer, gfm: true });
+    const destino = document.createElement("div");
+    destino.innerHTML = html;
+    nodo.replaceWith(destino);
+  });
+  mermaid.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "loose" });
+  Reveal.initialize({
+    hash: true,
+    slideNumber: true,
+    plugins: [RevealNotes]
+  }).then(() => mermaid.run({ querySelector: ".mermaid" }));
+</script>
+</body>
+</html>
