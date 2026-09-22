@@ -1,0 +1,58 @@
+{
+  "propuestas_por_estado": [
+    {
+      "estado": "aprobada",
+      "n": 91
+    },
+    {
+      "estado": "corregida",
+      "n": 29
+    }
+  ],
+  "propuestas_por_usuario_estado": [
+    {
+      "grupo": "simulador",
+      "estado": "aprobada",
+      "n": 91
+    },
+    {
+      "grupo": "simulador",
+      "estado": "corregida",
+      "n": 29
+    }
+  ],
+  "aprobaciones_por_decision": [
+    {
+      "decision": "aprobar",
+      "n": 91
+    },
+    {
+      "decision": "corregir",
+      "n": 29
+    }
+  ],
+  "pares_por_origen": [
+    {
+      "grupo": "simulador",
+      "origen": "aprobacion",
+      "n": 91
+    },
+    {
+      "grupo": "simulador",
+      "origen": "correccion",
+      "n": 29
+    }
+  ],
+  "tasa_sin_correccion": {
+    "simulador": {
+      "aprobadas": 91,
+      "decididas": 120,
+      "total": 120
+    },
+    "humano": {
+      "aprobadas": 0,
+      "decididas": 0,
+      "total": 0
+    }
+  }
+}

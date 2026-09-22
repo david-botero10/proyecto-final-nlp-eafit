@@ -1,0 +1,251 @@
+{
+  "n": 20,
+  "aciertos": 20,
+  "matriz": {
+    "etiquetas": [
+      "aprobado",
+      "observaciones",
+      "rechazado"
+    ],
+    "cuentas": [
+      [
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        9,
+        0
+      ],
+      [
+        0,
+        0,
+        8
+      ]
+    ],
+    "precision": {
+      "aprobado": 1,
+      "observaciones": 1,
+      "rechazado": 1
+    },
+    "soporte_esperado": {
+      "aprobado": 3,
+      "observaciones": 9,
+      "rechazado": 8
+    },
+    "soporte_predicho": {
+      "aprobado": 3,
+      "observaciones": 9,
+      "rechazado": 8
+    }
+  },
+  "corridas": [
+    {
+      "id": "p-inexistente",
+      "titulo": "empleado inexistente",
+      "origen": "d2",
+      "esperado": "rechazado",
+      "predicho": "rechazado",
+      "razones": [
+        "El empleado 999999 no existe o no está activo."
+      ]
+    },
+    {
+      "id": "p-duplicado",
+      "titulo": "turno duplicado el mismo día",
+      "origen": "d2",
+      "esperado": "rechazado",
+      "predicho": "rechazado",
+      "razones": [
+        "El 2026-08-03 el empleado 2 ya tiene un turno activo.",
+        "La semana del 2026-08-03 suma 56 horas; el máximo vigente es 44."
+      ]
+    },
+    {
+      "id": "p-ausencia",
+      "titulo": "turno dentro de una ausencia aprobada",
+      "origen": "d2",
+      "esperado": "rechazado",
+      "predicho": "rechazado",
+      "razones": [
+        "El 2026-08-05 el empleado 11 tiene una ausencia aprobada."
+      ]
+    },
+    {
+      "id": "p-domingo",
+      "titulo": "asignación en domingo",
+      "origen": "d2",
+      "esperado": "observaciones",
+      "predicho": "observaciones",
+      "razones": [
+        "El 2026-10-04 es domingo: aplica recargo dominical."
+      ]
+    },
+    {
+      "id": "p-festivo",
+      "titulo": "asignación en festivo 2026-10-12",
+      "origen": "d2",
+      "esperado": "observaciones",
+      "predicho": "observaciones",
+      "razones": [
+        "El 2026-10-12 es festivo (Día de la Raza): aplica recargo de día de fiesta."
+      ]
+    },
+    {
+      "id": "p-noche",
+      "titulo": "turno noche",
+      "origen": "d2",
+      "esperado": "observaciones",
+      "predicho": "observaciones",
+      "razones": [
+        "El turno noche del 2026-09-29 genera recargo nocturno."
+      ]
+    },
+    {
+      "id": "p-septimo",
+      "titulo": "séptimo día de la semana",
+      "origen": "d2",
+      "esperado": "observaciones",
+      "predicho": "observaciones",
+      "razones": [
+        "La semana del 2026-08-03 quedaría en 7 días asignados; el máximo es 6.",
+        "La semana del 2026-08-03 suma 56 horas; el máximo vigente es 44."
+      ]
+    },
+    {
+      "id": "p-ausencia-turnos",
+      "titulo": "ausencia sobre días con turnos activos",
+      "origen": "d2",
+      "esperado": "rechazado",
+      "predicho": "rechazado",
+      "razones": [
+        "La ausencia del 2026-08-03 al 2026-08-05 cubre turnos activos del empleado 2.",
+        "La semana del 2026-08-03 suma 48 horas; el máximo vigente es 44."
+      ]
+    },
+    {
+      "id": "p-limpia",
+      "titulo": "propuesta limpia",
+      "origen": "d2",
+      "esperado": "aprobado",
+      "predicho": "aprobado",
+      "razones": [
+        "La propuesta cumple las verificaciones: empleado activo, sin solapes y dentro de la jornada."
+      ]
+    },
+    {
+      "id": "p-mixta",
+      "titulo": "una acción limpia y otra en domingo",
+      "origen": "d2",
+      "esperado": "observaciones",
+      "predicho": "observaciones",
+      "razones": [
+        "El 2026-10-04 es domingo: aplica recargo dominical."
+      ]
+    },
+    {
+      "id": "f1-festivo-trasladado",
+      "titulo": "festivo trasladado (Reyes Magos, lunes 12 de enero)",
+      "origen": "f1",
+      "esperado": "observaciones",
+      "predicho": "observaciones",
+      "razones": [
+        "El 2026-01-12 es festivo (Reyes Magos): aplica recargo de día de fiesta."
+      ]
+    },
+    {
+      "id": "f1-reyes-calendario",
+      "titulo": "6 de enero no es el festivo trasladado",
+      "origen": "f1",
+      "esperado": "aprobado",
+      "predicho": "aprobado",
+      "razones": [
+        "La propuesta cumple las verificaciones: empleado activo, sin solapes y dentro de la jornada."
+      ]
+    },
+    {
+      "id": "f1-ausencia-cruza-semanas",
+      "titulo": "ausencia que cruza dos semanas y pisa turnos",
+      "origen": "f1",
+      "esperado": "rechazado",
+      "predicho": "rechazado",
+      "razones": [
+        "La ausencia del 2026-08-09 al 2026-08-10 cubre turnos activos del empleado 2.",
+        "La semana del 2026-08-03 suma 48 horas; el máximo vigente es 44.",
+        "La semana del 2026-08-10 suma 48 horas; el máximo vigente es 44."
+      ]
+    },
+    {
+      "id": "f1-noche-hacia-domingo",
+      "titulo": "noche del sábado que amanece en domingo",
+      "origen": "f1",
+      "esperado": "observaciones",
+      "predicho": "observaciones",
+      "razones": [
+        "El turno noche del 2026-10-03 genera recargo nocturno."
+      ]
+    },
+    {
+      "id": "f1-no-activo",
+      "titulo": "id fuera del catálogo de activos",
+      "origen": "f1",
+      "esperado": "rechazado",
+      "predicho": "rechazado",
+      "razones": [
+        "El empleado 999998 no existe o no está activo."
+      ]
+    },
+    {
+      "id": "f1-dos-turnos",
+      "titulo": "dos turnos el mismo día en una sola propuesta",
+      "origen": "f1",
+      "esperado": "rechazado",
+      "predicho": "rechazado",
+      "razones": [
+        "El 2026-09-30 el empleado 2 ya tiene un turno activo."
+      ]
+    },
+    {
+      "id": "f1-pasa-44",
+      "titulo": "la semana de Mónica queda en 48 horas",
+      "origen": "f1",
+      "esperado": "observaciones",
+      "predicho": "observaciones",
+      "razones": [
+        "La semana del 2026-08-03 suma 48 horas; el máximo vigente es 44."
+      ]
+    },
+    {
+      "id": "f1-reemplazo",
+      "titulo": "cancelar el domingo y caer en la incapacidad del lunes",
+      "origen": "f1",
+      "esperado": "rechazado",
+      "predicho": "rechazado",
+      "razones": [
+        "El 2026-08-10 el empleado 3 tiene una ausencia aprobada."
+      ]
+    },
+    {
+      "id": "f1-noche-domingo",
+      "titulo": "noche en domingo",
+      "origen": "f1",
+      "esperado": "observaciones",
+      "predicho": "observaciones",
+      "razones": [
+        "El 2026-11-01 es domingo: aplica recargo dominical.",
+        "El turno noche del 2026-11-01 genera recargo nocturno."
+      ]
+    },
+    {
+      "id": "f1-ausencia-sin-turno",
+      "titulo": "ausencia que cruza dos semanas sin pisar turnos",
+      "origen": "f1",
+      "esperado": "aprobado",
+      "predicho": "aprobado",
+      "razones": [
+        "La propuesta cumple las verificaciones: empleado activo, sin solapes y dentro de la jornada."
+      ]
+    }
+  ]
+}

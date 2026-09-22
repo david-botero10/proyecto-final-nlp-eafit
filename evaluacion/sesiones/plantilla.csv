@@ -1,0 +1,2 @@
+sesion_id,fecha,participante_codigo,duracion_min,t1_exito,t2_exito,t3_exito,t4_exito,t5_exito,t6_exito,t7_exito,t8_exito,t6_decision,t7_decision,t8_decision,likert_claridad,likert_confianza_citas,likert_utilidad_tarjeta,likert_aprobarias_sin_revisar,likert_esfuerzo,likert_intencion_uso,notas
+ejemplo-borrar,2026-09-21,p00,15,si,si,si,si,no,si,si,si,aprobar,rechazar,rechazar,4,3,5,2,4,3,Fila de ejemplo. Borrar antes de registrar una sesión real.
