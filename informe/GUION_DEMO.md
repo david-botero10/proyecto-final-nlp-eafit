@@ -143,7 +143,7 @@ El veredicto esperado es `observaciones`, art. 179. Los id de tarea cambian en c
 
 Phoenix igual recibe el turno simulado: es lo que E1 ya demostró con el span `relevo.turno`. Si el export falla, el chat sigue; díganlo y muestren la captura del informe (sección 5.6) en vez de una traza vacía.
 
-La tabla del extractor (3,08 % → 76,92 %, n = 65) está en la diapositiva y no depende de la red. Úsenla si la demo de la tarjeta no se pudo completar. No afirmen que esa tabla compara contra Grok.
+La tabla del extractor (3,08 % → 76,92 % → 83,08 %, n = 65, reportes C3 y E2) está en la diapositiva y no depende de la red. Úsenla si la demo de la tarjeta no se pudo completar. No afirmen que esa tabla compara contra Grok: esa columna sigue pendiente.
 
 ## Qué no hacer en estos ocho minutos
 

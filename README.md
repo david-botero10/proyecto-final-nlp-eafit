@@ -18,16 +18,18 @@ Licencia: [MIT](LICENSE).
 
 | Resultado | Cifra | De dónde sale |
 |---|---|---|
-| Exactitud total del extractor, test n = 65 | 3,08 % Qwen3.5-0.8B base → 76,92 % QLoRA v1 | [`docs/orca/reports/C3_LORA_REPORT.md`](docs/orca/reports/C3_LORA_REPORT.md) |
-| Misma tabla contra Grok | No se corrió: no había `XAI_API_KEY` | C3 |
+| Exactitud total del extractor, test n = 65 | 3,08 % base → 76,92 % QLoRA v1 → 83,08 % DPO v2 (+6,15 pp). IC 95 % de v2 [73,85 %, 90,77 %]; se solapa con el de v1 | [`docs/orca/reports/E2_DPO_REPORT.md`](docs/orca/reports/E2_DPO_REPORT.md), [`evaluacion/resultados/extraccion.json`](evaluacion/resultados/extraccion.json) |
+| Misma tabla contra Grok | Pendiente: no había `XAI_API_KEY` en C3, E2 ni F1 | C3, E2, F1 |
 | Nómina sintética, semilla 42 | 40 empleados, 1 837 asignaciones, 30 ausencias, 0 solapes | [`docs/orca/reports/A2_DB_REPORT.md`](docs/orca/reports/A2_DB_REPORT.md) |
 | Corpus descargado | 20 documentos | [`docs/orca/reports/A3_CORPUS_REPORT.md`](docs/orca/reports/A3_CORPUS_REPORT.md) |
-| Corpus insertado en B2 | 18 documentos, 497 chunks | [`docs/orca/reports/B2_INTEGRACION_REPORT.md`](docs/orca/reports/B2_INTEGRACION_REPORT.md) |
+| Corpus insertado en B2 | 18 documentos, 497 chunks (histórico) | [`docs/orca/reports/B2_INTEGRACION_REPORT.md`](docs/orca/reports/B2_INTEGRACION_REPORT.md) |
+| Corpus vigente | 20 documentos, 589 chunks | Commit `a21a6d6` (BOM de Función Pública) |
+| Citas, 20 preguntas, modo híbrido | recall@3 97,50 %, @5 100 %, @8 100 %, MRR 0,933. Juez LLM pendiente | [`docs/orca/reports/F1_EVALUACION_REPORT.md`](docs/orca/reports/F1_EVALUACION_REPORT.md) |
 | «Recargo nocturno», híbrido, k = 8 | art. 169, art. 168, art. 161 en 322 ms | [`docs/orca/reports/C1_CHAT_RAG_REPORT.md`](docs/orca/reports/C1_CHAT_RAG_REPORT.md) |
-| Auditor, 10 trampas | El veredicto obtenido coincide con el caso | [`docs/orca/reports/D2_AUDITOR_REPORT.md`](docs/orca/reports/D2_AUDITOR_REPORT.md) |
+| Auditor | 20/20. Precisión 100 % por clase. Matriz diagonal | [`evaluacion/resultados/auditor.json`](evaluacion/resultados/auditor.json) |
+| Aprobación | Simulador 75,83 % (91/120). Humanos: 0 filas | [`evaluacion/resultados/aprobaciones.json`](evaluacion/resultados/aprobaciones.json) |
 | Traza | Span `relevo.turno` en Phoenix, status OK | [`docs/orca/reports/E1_OBSERVABILIDAD_REPORT.md`](docs/orca/reports/E1_OBSERVABILIDAD_REPORT.md) |
-| Delta DPO v1 → v2 | Pendiente: no hay reporte E2 en este árbol | [E2: tabla con intervalos] |
-| Pruebas con usuarios | Pendiente de sesiones | [F1: sesiones] |
+| Pruebas con usuarios | Pendiente de sesiones. Protocolo en `evaluacion/PROTOCOLO_USUARIOS.md` | [`docs/orca/reports/F1_EVALUACION_REPORT.md`](docs/orca/reports/F1_EVALUACION_REPORT.md) |
 
 El detalle y las advertencias (qué es simulado, qué falta) están en
 [`informe/INFORME_FINAL.md`](informe/INFORME_FINAL.md).
@@ -115,10 +117,14 @@ está, no la apaguen ni la re-siembren: usen ese `localhost:5432`. Los pasos 2,
     El selector trae Coordinadora de enfermería, Jefe de vigilancia y Gerencia.
     El servidor MCP por stdio, si lo quieres aparte del chat, es `npm run mcp`.
 
-El extractor afinado como servicio HTTP (`EXTRACTOR_URL`, `npm run extractor:dev`)
-es el entregable de la ola E2 y **no está en este árbol**. Con `EXTRACTOR_URL`
-vacío, la extracción la hace Grok. Si el servicio existe y falla, también cae
-a Grok.
+El extractor afinado como servicio HTTP está en `ml/servir_extractor.py`.
+`npm run extractor:dev` lo levanta en `127.0.0.1` y en el puerto 8642, y
+prefiere el adaptador v2 si `ml/models/extractor-v2/adapter_config.json`
+existe (reporte E2). Con `EXTRACTOR_URL` vacío, la extracción la hace Grok.
+Si el servicio falla, también cae a Grok. El humo de E2, «ponle el de la
+noche a Ana el puente» con fecha 2026-09-21, devolvió Ana Mery Montoya
+Patiño, turno N, fecha 2026-10-12 y acción `asignar` (69 s en frío, 11 s
+en caliente).
 
 Variables documentadas en [`.env.example`](.env.example): `DATABASE_URL`,
 `PGPORT`, `XAI_API_KEY`, `RELEVO_MODELO`, `EMBED_SERVICE_URL`, `AUDITOR_URL`,
@@ -131,14 +137,14 @@ Con la base activa y, para el extractor, el venv de GPU que usó C3
 (`../relevo-gpu-venv`: torch con CUDA, `peft`, `trl`, `bitsandbytes`). Los
 pesos `ml/models/` y las corridas `ml/runs/` no se versionan.
 
-| Qué | Comando que existe hoy | Qué falta |
+| Qué | Comando | Qué falta |
 |---|---|---|
 | Gates | `npm run lint`, `npm test`, `npm run build` | — |
-| Extracción base y v1 | `ml/evaluar_extraccion.py --proveedor base` y `--proveedor lora --adapter ml/models/extractor-v1` | Intervalo, columna Grok y v2: [F1: `npm run eval:extraccion`] [E2: `ml/comparar_versiones.py`] |
-| Citas | El humo de `buscar_norma` está descrito en el reporte C1 | [F1: `evaluacion/evaluar_citas.ts`] |
-| Auditor | `npm test` incluye `tests/auditor/escenarios.test.ts` (10 escenarios, base real) | [F1: 10 trampas extra y matriz 3×3] |
-| Aprobaciones | SQL del anexo A de [`informe/INFORME_FINAL.md`](informe/INFORME_FINAL.md) | [F1: `npm run eval:aprobaciones`] |
-| Usuarios | — | [F1: protocolo y sesiones] |
+| Extracción base, v1 y v2 | `npm run eval:extraccion` (`evaluacion/evaluar_extraccion.py`) y `ml/comparar_versiones.py` | Columna Grok, si no hay `XAI_API_KEY` |
+| Citas | `npm run eval:citas` (`evaluacion/evaluar_citas.ts`) | Juez LLM, si no hay `XAI_API_KEY` |
+| Auditor | `npm run eval:auditor` (10 de D2 y 10 trampas nuevas, matriz 3×3). `npm test` sigue incluyendo los 10 de `tests/auditor/escenarios.test.ts` | — |
+| Aprobaciones | `npm run eval:aprobaciones` | Tasa humana: 0 filas hasta las sesiones |
+| Usuarios | Protocolo: [`evaluacion/PROTOCOLO_USUARIOS.md`](evaluacion/PROTOCOLO_USUARIOS.md). Plantilla: `evaluacion/sesiones/plantilla.csv` | Las sesiones |
 
 Entrenar v1 de nuevo (misma línea que C3, 4 635 s en la 4060 de ese reporte):
 
@@ -155,7 +161,8 @@ Entrenar v1 de nuevo (misma línea que C3, 4 635 s en la 4060 de ese reporte):
 | `auditor/` | Servicio A2A y reglas (44 h, domingos, solapes) |
 | `db/` | Migraciones SQL, runner y seed |
 | `data/` | Nómina sintética y órdenes (`train` / `val` / `test`) |
-| `ml/` | Indexación bge-m3, `servir.py`, extractor QLoRA |
+| `ml/` | Indexación bge-m3, `servir.py`, extractor QLoRA, `ml/dpo/`, `servir_extractor.py` |
+| `evaluacion/` | Cuatro métricas, protocolo de usuarios y `resultados/` |
 | `corpus/` | `fuentes.json` (`raw/` no se versiona) |
 | `informe/` | Informe final, presentación, guion de demo |
 | `docs/` | Arquitectura, plan, fuentes del curso, specs y reportes |
@@ -169,7 +176,7 @@ Entrenar v1 de nuevo (misma línea que C3, 4 635 s en la 4060 de ese reporte):
 | S2 | Arquitectura, esqueleto, esquema, corpus, MCP de lectura, gates |
 | S3 | Grok, RAG híbrido con citas, QLoRA v1 (3,08 % → 76,92 %) |
 | S4 | Tarjeta, auditor A2A, trazas en Phoenix, perfiles y guardrails |
-| S5 | Este informe, la presentación y el guion. Evaluación consolidada y DPO v2: pendientes de las olas F1 y E2 |
+| S5 | DPO v2 (83,08 %, intervalos solapados), suite en `evaluacion/`, este informe, la presentación y el guion. Grok y las sesiones con personas siguen pendientes |
 
 Plan: [`docs/PLAN_DESARROLLO.md`](docs/PLAN_DESARROLLO.md). Tope de entrega del curso: 30 de septiembre de 2026.
 

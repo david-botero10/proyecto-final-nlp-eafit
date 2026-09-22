@@ -60,7 +60,7 @@ Equipo: Isabel Jurado Jaramillo · Alejandro Silva Zuluaga · David Botero Londo
 
 Relevo es un agente conversacional para coordinar turnos y ausencias en una pyme colombiana simulada. Consultar es autónomo. Escribir en la nómina exige que una persona apruebe una tarjeta, y esa decisión queda como dato para afinar el extractor.
 
-Este informe cita cada cifra. Las tablas de resultados apuntan al reporte de la ola (`docs/orca/reports/`) o, cuando el número no está en un reporte, a la consulta de solo lectura que lo produjo. Donde la ola F1 o el reporte E2 todavía no están en este árbol, el hueco queda como marcador `[F1: …]` o `[E2: …]` para que el orquestador lo complete. No hay cifras de relleno.
+Este informe cita cada cifra. Las tablas de resultados apuntan al reporte de la ola (`docs/orca/reports/`), al JSON de `evaluacion/resultados/` o, cuando el número no está en un reporte, a la consulta de solo lectura que lo produjo. Las cifras de E2 y de F1 salen de esos reportes. Donde falta `XAI_API_KEY` o faltan sesiones con personas, el texto dice pendiente. No hay cifras de relleno.
 
 ## Mapa de la rúbrica
 
@@ -72,7 +72,7 @@ La rúbrica del curso (`docs/fuentes/SI7016-ProyectoFinal-2026-2.pdf`, página 4
 | Calidad técnica | 25 % | NLP, LLMs, RAG, embeddings y lo visto en clase | §4, §5, §6. Reportes C1, C3, D2 |
 | Uso adecuado de tecnologías | 15 % | Frameworks y protocolos (el curso nombra MCP, A2A, Hugging Face, pgvector, Phoenix) | §5, en especial «Uso de protocolos abiertos». `.env.example` |
 | Funcionalidad de la aplicación | 20 % | El agente completo, incluida la interfaz | §5.3–§5.6. Guion `informe/GUION_DEMO.md`. Reportes D1, D2, E1 |
-| Evaluación y validación | 10 % | Pruebas y análisis del desempeño | §8. C3 (n = 65), D2 (10 escenarios), E1 (traza). Suite F1 pendiente |
+| Evaluación y validación | 10 % | Pruebas y análisis del desempeño | §8. C3 (n = 65), D2 (10 escenarios), E1 (traza), E2 (v2) y F1 (`evaluacion/`) |
 | Presentación final | 10 % | Claridad de la presentación oral o de la demo | `informe/PRESENTACION.md`, `docs/entrega/S5_presentacion.html`, `informe/GUION_DEMO.md` |
 | Informe escrito | 5 % | Claridad y profundidad del documento técnico | Este archivo y `docs/entrega/S5_informe.html` |
 
@@ -86,17 +86,21 @@ Lo que ya está medido, y de dónde sale:
 
 | Resultado | Cifra | Fuente |
 |---|---|---|
-| Exactitud total del extractor en el test congelado (n = 65) | 3,08 % el Qwen3.5-0.8B base; 76,92 % con QLoRA v1 | `docs/orca/reports/C3_LORA_REPORT.md` |
-| Comparación contra Grok en esa misma tarea | No se corrió: no había `XAI_API_KEY` | C3, salida literal «Sin XAI_API_KEY» |
+| Exactitud total del extractor, medición C3 (n = 65) | 3,08 % el Qwen3.5-0.8B base; 76,92 % con QLoRA v1 | `docs/orca/reports/C3_LORA_REPORT.md` |
+| Comparación contra Grok en esa misma tarea | Pendiente: no había `XAI_API_KEY` en C3, en E2 ni en F1 | C3, E2 y F1: «Sin XAI_API_KEY» |
 | Corpus normativo descargado | 20 documentos, 1 743 846 bytes | `docs/orca/reports/A3_CORPUS_REPORT.md` |
 | Corpus insertado en la indexación de B2 | 18 documentos, 497 chunks | `docs/orca/reports/B2_INTEGRACION_REPORT.md` |
+| Corpus vigente tras el reindexado | 20 documentos, 589 chunks | Commit `a21a6d6`. La foto de B2 (18/497) queda como histórica |
 | Nómina sintética (semilla 42) | 3 turnos, 40 empleados, 1 837 asignaciones, 30 ausencias, 0 solapes con ausencias aprobadas | `docs/orca/reports/A2_DB_REPORT.md` |
-| Auditor sobre 10 trampas | El veredicto obtenido coincide con el caso en los 10 | `docs/orca/reports/D2_AUDITOR_REPORT.md` |
+| Auditor, 10 trampas de D2 | El veredicto obtenido coincide con el caso en los 10 | `docs/orca/reports/D2_AUDITOR_REPORT.md` |
+| Auditor, 20 escenarios de F1 | 20/20. Precisión 100 % en aprobado (3), observaciones (9) y rechazado (8). Matriz diagonal | `docs/orca/reports/F1_EVALUACION_REPORT.md`, `evaluacion/resultados/auditor.json` |
 | Traza de un turno en Phoenix | Span `relevo.turno`, kind AGENT, status OK | `docs/orca/reports/E1_OBSERVABILIDAD_REPORT.md` |
-| Delta DPO v1 → v2 | [E2: tabla base \| v1 \| v2 con intervalos] | El reporte E2 no está en este árbol |
-| Pruebas con usuarios | Pendiente de sesiones | [F1: sesiones de usuario] |
+| Delta DPO v1 → v2, exactitud total (n = 65) | v1 76,92 % IC 95 % [66,15 %, 87,69 %]; v2 83,08 % IC 95 % [73,85 %, 90,77 %]; delta +6,15 pp. Los intervalos se solapan | `docs/orca/reports/E2_DPO_REPORT.md`, `evaluacion/resultados/extraccion.json` |
+| Citas, 20 preguntas, modo híbrido | recall@3 97,50 %, recall@5 100 %, recall@8 100 %, MRR 0,933. Juez LLM pendiente | `docs/orca/reports/F1_EVALUACION_REPORT.md`, `evaluacion/resultados/citas.json` |
+| Aprobación del simulador | 75,83 % sin corrección (91/120). 29 corregidas. Humanos: 0 filas | `evaluacion/resultados/aprobaciones.json` |
+| Pruebas con usuarios | Pendiente de sesiones. El protocolo está en `evaluacion/PROTOCOLO_USUARIOS.md` | `docs/orca/reports/F1_EVALUACION_REPORT.md` |
 
-La innovación es el ciclo tarjeta → par → DPO → medición. Hoy el ciclo está diseñado y la señal simulada ya aparece en la base (anexo A); el antes/después de v2 no está publicado en un reporte de este worktree. La pregunta de 1 a 5 años sigue abierta, y el informe dice qué parte ya se puede afirmar.
+La innovación es el ciclo tarjeta → par → DPO → medición. El ciclo ya corrió con 29 correcciones simuladas (reporte E2): la exactitud total pasa de 76,92 % a 83,08 % y los intervalos se solapan. La pregunta de 1 a 5 años sigue abierta en lo que falta: la columna Grok y las sesiones con personas.
 
 ## 2. Introducción y caso de uso
 
@@ -200,7 +204,7 @@ Clasifica cada mensaje en `charla`, `consulta_datos`, `consulta_norma` u `orden_
 
 Traduce la orden coloquial al JSON `{empleado, turno, fechas, justificacion, accion}`. `accion` es `asignar`, `ausencia` o `quitar`. El turno es `M`, `T` o `N`. Las fechas son ISO y se resuelven contra «hoy» en `America/Bogota`.
 
-En la aplicación, `lib/agente/extraccion.ts` llama primero a `POST {EXTRACTOR_URL}/extraer` si la variable tiene valor. Si el servicio falla o el JSON no cumple el contrato, cae a Grok (`proveedor: "xai"`). Sin `EXTRACTOR_URL`, solo usa Grok (reporte D1 y `.env.example`). El modelo afinado es Qwen/Qwen3.5-0.8B con QLoRA; el servicio HTTP que lo expone es el entregable de E2 y **no está en este árbol** (no hay `ml/servir_extractor.py` ni el script `extractor:dev`).
+En la aplicación, `lib/agente/extraccion.ts` llama primero a `POST {EXTRACTOR_URL}/extraer` si la variable tiene valor. Si el servicio falla o el JSON no cumple el contrato, cae a Grok (`proveedor: "xai"`). Sin `EXTRACTOR_URL`, solo usa Grok (reporte D1 y `.env.example`). El modelo afinado es Qwen/Qwen3.5-0.8B con QLoRA. El servicio HTTP está en `ml/servir_extractor.py` y se levanta con `npm run extractor:dev`, en `127.0.0.1` y en el puerto `EXTRACTOR_PORT` (8642). El adaptador por defecto es v2 cuando existe `ml/models/extractor-v2/adapter_config.json` (reporte E2). El humo «ponle el de la noche a Ana el puente», con fecha de referencia 2026-09-21, devolvió Ana Mery Montoya Patiño, turno N, fecha 2026-10-12 y acción `asignar`: 69,087 s en frío y 11,098 s en caliente (reporte E2).
 
 ### 4.3 Recuperador híbrido
 
@@ -244,8 +248,10 @@ Las olas que aterrizaron en `main` de este worktree, y el reporte de cada una:
 | D1 | Tarjeta, `crear_propuesta`, ejecución transaccional, pares | `D1_TARJETA_REPORT.md` |
 | D2 | Auditor A2A y 10 escenarios | `D2_AUDITOR_REPORT.md` |
 | E1 | OpenTelemetry, Phoenix, perfiles, guardrails | `E1_OBSERVABILIDAD_REPORT.md` |
+| E2 | DPO v2 sobre 29 correcciones simuladas, comparación y `ml/servir_extractor.py` | `E2_DPO_REPORT.md` |
+| F1 | Suite de las cuatro métricas en `evaluacion/` | `F1_EVALUACION_REPORT.md` |
 
-E2 (DPO y servicio del extractor) y F1 (suite de evaluación) tienen spec en `docs/orca/` y no tienen reporte ni código en este árbol. El plan de desarrollo (`docs/PLAN_DESARROLLO.md`) nombra las semanas con otras letras (allí «E2» es la entrega). En este informe, la letra es la de la spec de la ola.
+El plan de desarrollo (`docs/PLAN_DESARROLLO.md`) nombra las semanas con otras letras (allí «E2» es la entrega). En este informe, la letra es la de la spec de la ola.
 
 ### 5.1 Por qué estas tecnologías
 
@@ -258,7 +264,7 @@ E2 (DPO y servicio del extractor) y F1 (suite de evaluación) tienen spec en `do
 | Datos | PostgreSQL 17 + pgvector, SQL explícito (`postgres-js`, `psycopg`) | Un motor para filas y vectores. Sin ORM, para que cada tool sea una consulta auditable. |
 | Tools | MCP, SDK TypeScript, stdio en `npm run mcp` | El chat de C1 no levanta ese proceso: usa un par `InMemoryTransport` dentro del servidor Next. El contrato es el mismo. |
 | Auditor | HTTP + JSON-RPC, sin SDK A2A | El contrato de la spec cabe en la Agent Card y en `message/send`. Menos dependencia, el mismo mensaje. |
-| Ajuste | `peft` 0.21 y `trl` 1.13 en el venv de GPU, fuera del clone | QLoRA en C3. DPO, cuando E2 aterrice, reutiliza ese adaptador. |
+| Ajuste | `peft` 0.21 y `trl` 1.13 en el venv de GPU, fuera del clone | QLoRA en C3. El DPO de E2 reutiliza ese adaptador (`ml/dpo/`, `ml/entrenar_dpo.py`). |
 | Trazas | OpenTelemetry, exportador **protobuf** hacia Phoenix en el puerto 6006 | La imagen de Phoenix responde 415 al OTLP/HTTP en JSON (reporte E1). |
 
 ### 5.2 Chat y router
@@ -296,7 +302,7 @@ La búsqueda solo léxica de B2, sobre los 497 chunks de entonces, fallaba donde
 | contrato de trabajo elementos | art. 23, cst |
 | reducción de jornada laboral | art. 161, cst_pr005 |
 
-«Vacaciones anuales» no debería abrir por el art. 185, y «trabajo nocturno porcentaje» no devolvió nada. El híbrido de C1 sube el art. 169 y el 168 para «recargo nocturno». El recall sistemático sobre 20 preguntas doradas es [F1: recall@3, recall@5, recall@8 y MRR; juez de fidelidad 0–1].
+«Vacaciones anuales» no debería abrir por el art. 185, y «trabajo nocturno porcentaje» no devolvió nada. El híbrido de C1 sube el art. 169 y el 168 para «recargo nocturno». Sobre las 20 preguntas doradas, F1 midió el modo híbrido (20 de 20, servicio de embeddings en el puerto 8631): recall@3 97,50 %, recall@5 100 %, recall@8 100 % y MRR 0,933 (`evaluacion/resultados/citas.json`, reporte F1). El juez de fidelidad queda pendiente: no había `XAI_API_KEY`. Esa corrida no trae filas en modo léxico, así que el contraste sistemático léxico contra híbrido de las 20 preguntas no se publica aquí. El contraste puntual de B2, en la tabla de arriba, sigue siendo el de aquella indexación.
 
 ### 5.4 Tarjeta
 
@@ -328,7 +334,28 @@ El test tiene 65 filas: 60 órdenes de moldes no vistos en train (20 asignar, 20
 | JSON válido | 90,77 % | 100,00 % |
 | exactitud total | 3,08 % | 76,92 % |
 
-La exactitud total exige el JSON entero, no un campo. Por eso el base, que a veces acierta el nombre, queda en 3,08 %. V1 gana en todos los campos. El que más se le resiste es `accion` (84,62 %). Estos números comparan el base contra el adaptador. **No** comparan contra Grok: la corrida `--proveedor xai` imprimió «Sin XAI_API_KEY: se omite el proveedor xai. No es un error de gate.» Los intervalos y la columna Grok son [F1: exactitud base | v1 | v2 | Grok con intervalos bootstrap] y [E2: tabla base | v1 | v2 con delta e intervalos].
+La exactitud total exige el JSON entero, no un campo. Por eso el base, que a veces acierta el nombre, queda en 3,08 %. En la medición de C3, v1 gana en todos los campos y el que más se le resiste es `accion` (84,62 %). Esa tabla compara el base contra el adaptador v1.
+
+E2 y F1 vuelven a correr el mismo test congelado con v2 (`ml/comparar_versiones.py`, `ml/runs/comparacion.md`, `evaluacion/resultados/extraccion.json`). v1 acierta 50 de 65 y v2 acierta 54 de 65.
+
+| Métrica | Base | v1 | v2 | Delta v1→v2 | Grok |
+|---|---:|---:|---:|---:|---:|
+| empleado | 80,00 % | 100,00 % | 100,00 % | +0,00 pp | pendiente |
+| turno | 36,92 % | 100,00 % | 100,00 % | +0,00 pp | pendiente |
+| acción | 55,38 % | 84,62 % | 96,92 % | +12,31 pp | pendiente |
+| justificación | 53,85 % | 98,46 % | 98,46 % | +0,00 pp | pendiente |
+| fechas (F1) | 19,18 % | 84,62 % | 84,62 % | +0,00 pp | pendiente |
+| JSON válido | 90,77 % | 100,00 % | 100,00 % | +0,00 pp | pendiente |
+| exactitud total | 3,08 % | 76,92 % | 83,08 % | +6,15 pp | pendiente |
+
+| Versión | Exactitud total | IC 95 % (bootstrap, 1 000 remuestreos, semilla 42) |
+|---|---:|---:|
+| base | 3,08 % | [0,00 %, 7,69 %] |
+| v1 | 76,92 % | [66,15 %, 87,69 %] |
+| v2 | 83,08 % | [73,85 %, 90,77 %] |
+| Grok | pendiente | pendiente |
+
+La columna Grok sigue pendiente. E2 y F1 imprimieron «Sin XAI_API_KEY: se omite el proveedor xai. No es un error de gate.» Los intervalos de v1 y de v2 se solapan. El detalle por subgrupo está en la sección 8.1.
 
 ### 5.6 Observabilidad
 
@@ -390,7 +417,7 @@ SELECT count(*) FROM documentos;  -- 20
 SELECT count(*) FROM chunks;      -- 589
 ```
 
-`documentos` incluye, además de las 18 partes del CST, «Ley 2101 de 2021 — reducción de la jornada laboral semanal» y «Ley 2466 de 2025 — reforma laboral». Alguien reindexó después de B2. El informe no atribuye 589 al reporte B2. El número de B2 sigue siendo 497 / 18. El de la base que va a ver la demo es 20 / 589.
+`documentos` incluye, además de las 18 partes del CST, «Ley 2101 de 2021 — reducción de la jornada laboral semanal» y «Ley 2466 de 2025 — reforma laboral». El reindexado está en el commit `a21a6d6` (`fix(ml): decodificar UTF-8 con BOM antes del sniffing de BS4`). Función Pública sirve esas leyes en UTF-8 con BOM y sin charset; BeautifulSoup las leía como cp1252 y el mojibake dejaba 0 artículos. Con el arreglo, la reindexación dejó 20 documentos y 589 chunks, y la consulta «reducción de jornada» devuelve el art. 161 del CST y el de ambas leyes. El informe no atribuye 589 al reporte B2. El número de B2 sigue siendo 497 / 18. El vigente, y el de la demo, es 20 / 589.
 
 ### 6.2 Nómina sintética
 
@@ -418,7 +445,7 @@ Una muestra de 30 positivos la revisó el worker que armó el dataset, no el equ
 
 ### 6.4 Decisiones simuladas
 
-La spec de E2 prevé ~120 órdenes nuevas, pasadas por el extractor v1, etiquetadas como aprobación si coinciden con el esperado y como corrección si no, con `usuario = "simulador"` y el texto marcado. El código de ese simulador no está en este árbol. La base compartida, que no se re-sembró, sí tiene filas. Consulta de solo lectura del 21 de septiembre de 2026:
+E2 pasó 120 órdenes nuevas por el extractor v1 (`data/ordenes/simular_decisiones.py`, semilla 42), las etiquetó como aprobación si coincidían con el esperado y como corrección si no, con `usuario = "simulador"` y el texto marcado. El reporte E2 cuenta 120 órdenes con JSON válido: 91 aprobaciones y 29 correcciones. Esas 29 son los pares DPO (`ml/exportar_pares.py`: `dpo: 29`, `sft: 0`). Las 91 aprobaciones limpias no entraron al entrenamiento. La base compartida, que no se re-sembró, tiene la misma foto. Consulta de solo lectura del 21 de septiembre de 2026:
 
 | Consulta | Resultado |
 |---|---|
@@ -428,7 +455,7 @@ La spec de E2 prevé ~120 órdenes nuevas, pasadas por el extractor v1, etiqueta
 | `pares_preferencia.usado_en_version` | NULL en las 120 |
 | `asignaciones` con `origen = 'tarjeta'` | 0 |
 
-El `orden_texto` de esas propuestas empieza por `[simulador fecha_referencia=…]`. Son la señal demostrativa que E2 describe, no decisiones del equipo ni de invitados. `usado_en_version` nulo quiere decir que ninguna corrida registrada las marcó como ya consumidas por un adaptador v2. Las 91 aprobaciones limpias, con `rechazada` NULL, no entran a DPO según la spec E2. La señal de preferencia disponible hoy es las 29 correcciones.
+El `orden_texto` de esas propuestas empieza por `[simulador fecha_referencia=…]`. Son la señal de E2, no decisiones del equipo ni de invitados. En la fotografía del 21 de septiembre `usado_en_version` iba NULL en las 120: el reporte E2 no dice que el entrenamiento haya rellenado esa columna. Exportó las 29 correcciones a `ml/runs/pares_dpo.jsonl` (no se versiona) y entrenó con ellas. Las 91 aprobaciones limpias, con `rechazada` NULL, no entran a DPO. La señal de preferencia que usó v2 son las 29 correcciones.
 
 ## 7. Componente de innovación: la aprobación humana como dato de entrenamiento
 
@@ -439,16 +466,16 @@ El ciclo, pieza por pieza:
 1. **Tarjeta.** La orden se extrae, se valida y se muestra. La persona ve las filas.
 2. **Decisión.** Aprobar, corregir o rechazar. Solo entonces hay escritura de nómina, y solo de lo que la tarjeta congeló.
 3. **Par.** `pares_preferencia` guarda `prompt_texto`, `elegida`, `rechazada` y `origen`.
-4. **DPO.** La spec E2 exporta los pares con `rechazada` no nula al formato de TRL `{prompt, chosen, rejected}`, parte del adaptador v1 (`is_trainable=true`, `beta` 0,1, lr baja, referencia congelada) y guarda `extractor-v2`.
-5. **Medición.** El mismo `data/ordenes/test.jsonl` corre contra base, v1 y v2, con intervalos bootstrap de 1 000 remuestreos y cortes por fechas relativas frente a absolutas, y por la acción `quitar`. Si hay clave, entra la columna Grok.
-6. **Servicio.** `POST /extraer` para que la app use v2 y, si falla, caiga a Grok.
+4. **DPO.** E2 exporta los pares con `rechazada` no nula al formato de TRL `{prompt, chosen, rejected}`, parte del adaptador v1 (`is_trainable=true`, `beta` 0,1, lr 5e-6, referencia congelada) y guarda `extractor-v2`. Entraron 29 pares, los 29 se usaron, 1 época.
+5. **Medición.** El mismo `data/ordenes/test.jsonl` corre contra base, v1 y v2, con intervalos bootstrap de 1 000 remuestreos y cortes por fechas relativas frente a absolutas, y por la acción `quitar`. Si hay clave, entra la columna Grok. En esta corrida no había clave.
+6. **Servicio.** `POST /extraer` (`ml/servir_extractor.py`, `npm run extractor:dev`, puerto 8642) para que la app use v2 y, si falla, caiga a Grok.
 
 Eso es el diseño. Lo que los resultados dicen **hoy**:
 
 - El modelo pequeño, afinado con órdenes sintéticas del dominio, pasa de 3,08 % a 76,92 % de exactitud total contra su propio base (n = 65, reporte C3). En la tarea de extraer JSON de una orden de turnos, el adaptador sí aprende.
 - No sabemos si supera a Grok. Esa columna no se midió.
-- No sabemos si DPO mueve la aguja. No hay `metricas.json` de v2 ni tabla de comparación en este árbol. [E2: loss, rewards/accuracies y segundos de extractor-v2]. [E2: delta v1→v2 por campo, con intervalo].
-- La señal humana real es cero. Hay 29 correcciones simuladas y 91 aprobaciones simuladas. La spec de arquitectura ya advertía el riesgo: «pocas decisiones humanas para DPO» se mitiga con sesiones del equipo y con escenarios simulados, y los resultados se publican con intervalos, no solo con un promedio. El simulador es honesto si se etiqueta. Aquí está etiquetado (`usuario = simulador`). No es un sustituto de las sesiones.
+- El DPO movió la exactitud total, y el movimiento es estrecho. Con 29 pares, 1 época, lr 5e-6 y beta 0,1, la loss del historial pasó de 0,6931471824645996 en el paso 1 a `loss_final` 0,5862218737602234 (`metricas.json` literal del reporte E2). `rewards/accuracies` quedó en 0,6875. El bloque de entrenamiento tardó 206,434 s y el pico de VRAM fue 8 428,99 MiB en la RTX 4060 Laptop (la tarjeta reporta 8 188 MiB; el paso terminó sin OOM). En el test congelado la exactitud total sube de 76,92 % a 83,08 % (+6,15 pp). El IC 95 % de v1 es [66,15 %, 87,69 %] y el de v2 es [73,85 %, 90,77 %]. Se solapan: con n = 65 el delta no queda separado del ruido. Los 4 aciertos nuevos (50/65 → 54/65) están en `quitar`. Ahí la acción pasa de 50 % a 90 % y la exactitud total de 50 % a 70 %. La F1 de fechas no se mueve (84,62 % en el total; 75,00 % dentro de `quitar`). En las 5 órdenes de fecha absoluta la acción de v2 llega a 80 % y la exactitud total sigue en 0 %: la fecha sigue mal. Lectura del reporte E2: el DPO corrigió la acción, no el calendario (`evaluacion/extraccion.md`).
+- La señal humana real es cero. Hay 29 correcciones simuladas y 91 aprobaciones simuladas. La arquitectura ya advertía el riesgo: «pocas decisiones humanas para DPO» se mitiga con sesiones del equipo y con escenarios simulados, y los resultados se publican con intervalos, no solo con un promedio. El simulador es honesto si se etiqueta. Aquí está etiquetado (`usuario = simulador`). No es un sustituto de las sesiones.
 
 La pregunta prospectiva, copiada de la propuesta, es si en un horizonte de uno a cinco años un modelo pequeño afinado con las correcciones de sus usuarios puede superar al LLM de frontera en su tarea de dominio, con menor costo y sin que los datos salgan de la organización. Hoy la respuesta parcial es: en esta tarea, el pequeño ya supera a su base por un margen grande, cabe en 8 GB, y los datos de nómina no salieron de la máquina. Falta el rival de frontera y falta que la señal sea de personas. Las dos ausencias están marcadas, no escondidas.
 
@@ -460,25 +487,35 @@ Los errores de v1 dicen dónde debería apuntar esa señal. Del reporte C3, en e
 4. «Chao, que le vaya bien en el turno.» Negativo: esperado `null`, predicción `null`.
 5. «Elimine la asignación de Antonio el puente.» Con referencia 2026-11-04, esperado y predicción: quitar el lunes `2026-11-16`.
 
-El patrón es el que la spec E2 señala: fechas relativas y la acción `quitar` frente a `ausencia`. Un DPO que solo refuerce aprobaciones limpias no toca ese patrón. Por eso las 91 aprobaciones no cuentan como pares, y las 29 correcciones son la señal que importa. Si v2 no mejora, el reporte E2 tiene que decirlo. Este informe no adelanta un delta.
+El patrón es el que el reporte E2 confirma: la acción `quitar` frente a `ausencia` es donde v2 gana, y el calendario no. Las 91 aprobaciones no cuentan como pares. Las 29 correcciones son la señal que se usó. El delta está publicado, con intervalo, y ese intervalo se solapa con el de v1.
 
 ## 8. Evaluación
 
-El plan define cuatro métricas. Aquí está lo que cada ola ya midió, el análisis de los errores con los ejemplos de los reportes, y lo que F1 todavía tiene que consolidar. No hay carpeta `evaluacion/` en este árbol.
+El plan define cuatro métricas. Aquí está lo que midieron C3, D2, E2 y F1, con el análisis de los errores. La suite vive en `evaluacion/` (reporte F1).
 
 ### 8.1 Exactitud de extracción
 
-Definición del plan: por campo (empleado, fechas, turno, justificación) y exactitud total, el mismo test congelado, afinado contra Grok. Lo publicado es la tabla de la sección 5.5: base contra QLoRA v1, n = 65, sin intervalos y sin Grok.
+Definición del plan: por campo (empleado, fechas, turno, justificación) y exactitud total, el mismo test congelado, afinado contra Grok. Lo publicado en C3 es base contra QLoRA v1. E2 y F1 añaden v2, el intervalo y los subgrupos (sección 5.5). Grok sigue pendiente.
 
 Lectura, sin maquillar el 76,92 %:
 
 - El salto de exactitud total (3,08 → 76,92) es real y está en el reporte. También es el número más frágil: una fecha mal resuelta tumba la fila entera aunque el nombre y el turno estén bien. El F1 de fechas sube de 19,18 % a 84,62 %, y ahí se concentra el resto del error.
 - `accion` en 84,62 % es el peor campo de v1. El ejemplo de Alejandra Herrera confunde «no le deje turno» con una ausencia. Para la nómina no es un error cosmético: una ausencia escribe en otra tabla.
 - El base produce JSON inválido en el 9,23 % de las filas (100 − 90,77). V1, en este test, no. El parser del harness acepta vallas y ruido; el contrato rechaza un turno fuera de `{M, T, N, null}`.
-- Falta el intervalo. Con n = 65, un 76,92 % son 50 filas exactas de 65. [F1: intervalo bootstrap de 1 000 remuestreos]. Sin ese intervalo, el 76,92 % es un punto, no una banda.
-- Falta Grok en la misma tabla. Hasta que esa columna exista, no se puede afirmar que el extractor afinado gane o pierda contra el modelo de frontera. [F1: columna Grok].
+- El intervalo ya está. Con n = 65, un 76,92 % son 50 filas exactas de 65 y un 83,08 % son 54 de 65. Bootstrap de 1 000 remuestreos, semilla 42, percentil 2,5–97,5 (`evaluacion/resultados/extraccion.json`): base [0,00 %, 7,69 %], v1 [66,15 %, 87,69 %], v2 [73,85 %, 90,77 %].
+- Grok sigue fuera de la tabla. Hasta que esa columna exista, no se puede afirmar que el extractor afinado gane o pierda contra el modelo de frontera. E2 y F1 la dejan en pendiente porque no había `XAI_API_KEY`.
 
-Subgrupos (fechas relativas frente a absolutas; `quitar` frente al resto): [E2: subgrupos] y, si F1 reutiliza el comparador, [F1: subgrupos de extracción].
+Subgrupos de la misma corrida (`evaluacion/extraccion.md`, reporte E2). F1 reutiliza `ml/comparar_versiones.py` y publica los mismos cortes:
+
+| Corte | n | Total v1 → v2 | Acción v1 → v2 | Fechas (F1) v1 → v2 |
+|---|---:|---|---|---|
+| Fechas relativas | 57 | 82,46 % → 89,47 % (+7,02 pp) | 91,23 % → 98,25 % | 91,23 % → 91,23 % |
+| Fechas absolutas | 5 | 0,00 % → 0,00 % | 0,00 % → 80,00 % | 0,00 % → 0,00 % |
+| Sin fecha en la orden | 3 | 100,00 % → 100,00 % | 100,00 % → 100,00 % | 100,00 % → 100,00 % |
+| Acción quitar | 20 | 50,00 % → 70,00 % (+20,00 pp) | 50,00 % → 90,00 % | 75,00 % → 75,00 % |
+| Resto (no quitar) | 45 | 88,89 % → 88,89 % | 100,00 % → 100,00 % | 88,89 % → 88,89 % |
+
+El DPO corrigió la acción en `quitar`. No corrigió el calendario.
 
 ### 8.2 Fidelidad de citas
 
@@ -488,7 +525,7 @@ A favor: en el humo híbrido, los dos primeros chunks de «recargo nocturno» so
 
 En contra, ya medido en léxico (reporte B2): «vacaciones anuales» abre por el art. 185, que en ese trozo es dominical, y «trabajo nocturno porcentaje» no devuelve nada. Un juez que solo mire si hay un chip verde aprobaría una cita al artículo equivocado. Por eso F1 pide recall del artículo esperado, no solo «hubo cita».
 
-[F1: 20 preguntas doradas, recall@3, recall@5, recall@8, MRR, y fidelidad 0–1 del juez si hay `XAI_API_KEY`]. Sin esa tabla, la afirmación defendible es más chica: para la consulta de recargo nocturno, el híbrido recupera el artículo que enuncia el porcentaje, y la UI lo puede mostrar.
+F1 midió las 20 preguntas doradas de `evaluacion/citas_doradas.jsonl` con `buscarNorma`, k = 8, modo híbrido en las 20 (`evaluacion/resultados/citas.json`, reporte F1). Recall@3 97,50 %, recall@5 100 %, recall@8 100 %, MRR 0,933. El MRR usa el primer artículo esperado dentro de los 8; si no aparece, aporta 0. Fuera del primer puesto o del top 3 quedan c16 (MRR 0,333), c18 (recall@3 50 %) y c20 (MRR 0,333). El juez de fidelidad queda pendiente: requiere `XAI_API_KEY`. `npm run eval:citas` lo completa cuando la clave exista. Para «recargo nocturno», el híbrido de C1 sigue siendo la evidencia de que el art. 168, el que enuncia el 35 %, entra en el panel.
 
 ### 8.3 Auditor
 
@@ -509,25 +546,48 @@ Diez escenarios del reporte D2, todos contra el seed de `localhost:5432`, por el
 
 El séptimo día no se rechaza. La spec reserva `rechazado` para empleado ausente o solape duro. El límite semanal queda en observaciones para que la tarjeta lo muestre y la persona decida. Esa es una decisión de producto, no un fallo de la tabla: el sistema informa y no confisca la aprobación salvo en el solape duro y en el empleado inválido.
 
-No hay matriz de confusión ni precisión por clase. Diez casos diseñados para caer en una clase, y que caen ahí, no estiman la precisión sobre un conjunto más amplio. [F1: precisión por clase y matriz 3×3, con 10 trampas adicionales].
+F1 repitió esos 10 y sumó 10 trampas nuevas (`evaluacion/escenarios_extra.ts`, `evaluacion/auditor.md`). Aciertos 20/20. Precisión 100 % en las tres clases. Soporte esperado: aprobado 3, observaciones 9, rechazado 8. La matriz es diagonal (`evaluacion/resultados/auditor.json`, reporte F1). Filas = esperado, columnas = predicho:
+
+| esperado \ predicho | aprobado | observaciones | rechazado |
+|---|---:|---:|---:|
+| aprobado | 3 | 0 | 0 |
+| observaciones | 0 | 9 | 0 |
+| rechazado | 0 | 0 | 8 |
+
+Las 10 trampas nuevas, todas con el veredicto que el caso pedía:
+
+| id | Caso | Veredicto |
+|---|---|---|
+| f1-festivo-trasladado | Festivo trasladado (Reyes Magos, lunes 12 de enero de 2026) | observaciones |
+| f1-reyes-calendario | El 6 de enero no es el festivo trasladado | aprobado |
+| f1-ausencia-cruza-semanas | Ausencia que cruza dos semanas y pisa turnos | rechazado |
+| f1-noche-hacia-domingo | Noche del sábado 2026-10-03, que amanece en domingo | observaciones |
+| f1-no-activo | Id 999998, fuera del catálogo de activos | rechazado |
+| f1-dos-turnos | Dos turnos el mismo día en una sola propuesta | rechazado |
+| f1-pasa-44 | La semana de Mónica queda en 48 horas | observaciones |
+| f1-reemplazo | Cancelar el domingo y caer en la incapacidad del lunes | rechazado |
+| f1-noche-domingo | Noche en domingo (2026-11-01) | observaciones |
+| f1-ausencia-sin-turno | Ausencia que cruza dos semanas sin pisar turnos | aprobado |
+
+`evaluacion/auditor.md` advierte que una precisión de 1,00 aquí significa que el auditor sigue las reglas de D2, no que un humano independiente haya rotulado los casos. El seed tiene 0 empleados con `activo = false`; `f1-no-activo` usa el id 999998 y la misma regla («no existe o no está activo»). Diez casos que caen donde fueron diseñados no estimaban la precisión; veinte, con matriz, estiman el cumplimiento de esas reglas sobre este conjunto, y nada más.
 
 ### 8.4 Tasa de aprobación y regresión entre versiones
 
 Definición del plan: proporción de tarjetas aprobadas sin corrección, y su evolución; el test congelado contra cada versión del extractor (base → v1 → v2) en Phoenix.
 
-Fotografía de la base el 21 de septiembre de 2026 (sección 6.4), que **no** es la métrica F1:
+F1 separa al simulador de las personas con una consulta de solo lectura (`evaluacion/resultados/aprobaciones.json`, `npm run eval:aprobaciones`). Reproduce la fotografía del 21 de septiembre (sección 6.4):
 
-- 91 de 120 propuestas simuladas quedaron `aprobada` sin corrección (75,8 % de esa bolsa).
-- 29 de 120 quedaron `corregida`.
-- 0 rechazadas, 0 de una persona, 0 filas de nómina con `origen = 'tarjeta'`.
+- Simulador: 75,83 % sin corrección (91 aprobadas / 120 decididas). 29 corregidas. 0 rechazos.
+- Humanos: 0 propuestas, 0 decididas. La tasa humana queda pendiente de las sesiones.
+- 0 filas de nómina con `origen = 'tarjeta'` en esa fotografía.
 
-Leer 75,8 % como «el sistema acierta tres de cada cuatro veces con usuarios» sería falso. Es la tasa con la que el simulador, comparando v1 contra la etiqueta del generador, no tuvo que corregir. [F1: tasa de aprobación humana, separada de `usuario = 'simulador'`].
+Leer 75,83 % como «el sistema acierta tres de cada cuatro veces con usuarios» sería falso. Es la tasa con la que el simulador, comparando v1 contra la etiqueta del generador, no tuvo que corregir.
 
-Regresión entre versiones: C3 comparó base y v1 en el test congelado, fuera de Phoenix. La corrida base → v1 → v2 dentro de Phoenix no está. [E2: tabla única] y [F1: regresiones]. El tablero de Phoenix, hoy, muestra trazas de turno (E1), no esa comparación.
+Regresión entre versiones: la tabla única base → v1 → v2 está en `ml/runs/comparacion.md` y en `evaluacion/extraccion.md` (reportes E2 y F1). Es el mismo test congelado, fuera de Phoenix. El tablero de Phoenix sigue mostrando trazas de turno (E1), no esa comparación. La regresión con usuarios, de una sesión a la siguiente, tampoco existe: hacen falta las filas humanas.
 
 ### 8.5 Pruebas con usuarios
 
-No hay sesiones registradas. El protocolo (guion, cuestionario Likert, plantilla CSV) es de F1 y no está en el árbol. Estado: **pendiente de sesiones**. [F1: al menos las sesiones que el plan pide, con el análisis]. El guion de demo de este informe (`informe/GUION_DEMO.md`) es el de la sustentación, no el protocolo de usuarios.
+No hay sesiones registradas. El protocolo sí está: guion de 15 minutos, cuestionario Likert y plantilla CSV en `evaluacion/PROTOCOLO_USUARIOS.md` y `evaluacion/sesiones/plantilla.csv` (reporte F1). Estado de las sesiones: **pendiente**. El plan pide sesiones con el equipo y con invitados; este árbol deja el protocolo y no las filas. El guion de demo de este informe (`informe/GUION_DEMO.md`) es el de la sustentación, no el protocolo de usuarios.
 
 ## 9. Observabilidad y gobernanza
 
@@ -544,28 +604,28 @@ La gobernanza no depende de que el modelo «se porte bien». Está en roles, en 
 | Sin clave no hay llamada silenciosa a xAI | El chat lo dice. Los tests borran la clave | C1, D2, E1 |
 | Secretos solo en `.env` | `.env.example` documenta los nombres. Los reportes no pegan la clave. El DSN no se imprime completo | B1, B2, E1 |
 
-Phoenix es el lugar donde una conversación se puede abrir después. El turno de E1 demuestra el camino: OTLP protobuf, span de agente, sin error de export en la consola. No demuestra todavía un tablero de regresiones entre versiones. Eso queda atado a E2 y a F1.
+Phoenix es el lugar donde una conversación se puede abrir después. El turno de E1 demuestra el camino: OTLP protobuf, span de agente, sin error de export en la consola. La comparación base → v1 → v2 está en la tabla de E2 y de F1, no en ese tablero.
 
 El desfase 44 h (umbral del auditor, Ley 2101) frente a 42 h (art. 161 indexado tras la Ley 2466) es una decisión explícita de D2, no un descuido escondido. Hay que decirlo en la sustentación: el auditor aplica 44 hasta que el equipo cambie la constante, aunque el chunk recuperado hable de 42.
 
 ## 10. Limitaciones, riesgos y trabajo futuro
 
-1. **Kernels en Windows.** Qwen3.5-0.8B entrenó sin `causal_conv1d` ni `flash-linear-attention`. El fallback es válido y costó 4 635 s en una 4060 de portátil. Otra máquina puede ir más rápido; los pesos no están en el repositorio (`.gitignore`). Quien reproduzca el número necesita el venv de GPU `../relevo-gpu-venv` y el adaptador `ml/models/extractor-v1`, que C3 generó y no versionó.
-2. **Señal DPO escasa y simulada.** 29 correcciones, 0 humanas, v2 sin medir. Un delta publicado sin intervalo, o mezclando al simulador con personas, no sería defendible. El trabajo futuro es correr E2 en honesto (aunque v2 empeore) y juntar sesiones.
+1. **Kernels en Windows.** Qwen3.5-0.8B entrenó sin `causal_conv1d` ni `flash-linear-attention`. El fallback es válido y costó 4 635 s en una 4060 de portátil. Otra máquina puede ir más rápido; los pesos no están en el repositorio (`.gitignore`). Quien reproduzca el número necesita el venv de GPU `../relevo-gpu-venv` y los adaptadores `ml/models/extractor-v1` y `extractor-v2`, que C3 y E2 generaron y no versionaron.
+2. **Señal DPO escasa y simulada.** 29 correcciones, 0 humanas. v2 sí está medido: +6,15 pp de exactitud total, intervalos solapados, ganancia en la acción `quitar` y no en las fechas (reporte E2). Mezclar al simulador con personas seguiría sin ser defendible. El trabajo futuro es juntar sesiones y repetir la tabla cuando haya pares de personas.
 3. **Cartillas del Ministerio no descargables.** El corpus es de leyes. Falta el lenguaje llano y los ejemplos numéricos que la arquitectura quería de las cartillas. Los URL de A3 siguen como evidencia del intento, no como un pendiente vago.
-4. **Leyes 2101 y 2466.** En B2 no se insertaron. En la base de esta entrega sí hay filas. No hay un reporte que explique el reindexado. Hasta que alguien deje la corrida por escrito, el número defendible de la ola es 497 chunks, y el número de la demo es el `count(*)` del anexo A.
-5. **Grok no está en la tabla de extracción.** Sin `XAI_API_KEY` en C3. La pregunta del proyecto queda a medias mientras esa columna diga «pendiente».
+4. **Leyes 2101 y 2466.** En B2 no se insertaron (18 documentos, 497 chunks). El commit `a21a6d6` explica el reindexado: decodifica el UTF-8 con BOM de Función Pública antes del sniffing de BeautifulSoup, y la reindexación dejó 20 documentos y 589 chunks. El número de la ola B2 sigue siendo 497. El número vigente del corpus, y el de la demo, es 20 / 589.
+5. **Grok no está en la tabla de extracción.** Sin `XAI_API_KEY` en C3, en E2 y en F1. La pregunta del proyecto queda a medias mientras esa columna diga «pendiente». El juez de citas tiene el mismo hueco.
 6. **Re-ranker apagado en el humo.** `POST /rerank` devolvió 501. Los scores de C1 son de RRF. El híbrido puede cambiar de orden cuando el reranker esté en caché.
 7. **Dos resolutores de «de hoy en ocho».** `data/ordenes/VALIDACION.md` define la expresión como +7 días. `lib/agente/extraccion.ts` le dice a Grok «hoy + 8». El guion no usa esa frase. Hay que unificarla antes de evaluar fechas relativas con los dos proveedores.
 8. **Alias ambiguos.** «Elizabeth» y «Diego» son dos personas cada uno (enfermería y vigilancia; el test de C3 lo documenta). «Ana» es Ana Mery Montoya Patiño, de recepción: el ejemplo de la interfaz, con el perfil de enfermería, debe rechazarse por equipo. El guion usa «Doris Herrera Sánchez», que es única y de enfermería.
 9. **Voz y despliegue.** La propuesta deja la voz como extensión opcional. Vercel y Hugging Face Spaces están en el plan de la semana 5 y no son el estado de este árbol: la app corre en local. No se afirma un despliegue que no existe.
-10. **Usuarios.** Cero sesiones. La funcionalidad se demostró con tests, con un humo de RAG, con una tarjeta manual que luego se borró, y con diez escenarios del auditor. Eso no es una prueba con coordinadores.
+10. **Usuarios.** Cero sesiones. El protocolo de 15 minutos y la plantilla CSV ya están en `evaluacion/`. La funcionalidad se demostró con tests, con un humo de RAG, con una tarjeta manual que luego se borró, con diez escenarios de D2 y con veinte de F1. Eso no es una prueba con coordinadores.
 
 ## 11. Conclusiones
 
 Relevo deja un agente que consulta solo y escribe con permiso. El permiso es una tarjeta, la tarjeta es exactamente la escritura, y la decisión queda en una tabla. MCP separa las tools. A2A separa al auditor. El auditor aplica reglas y cita artículos del corpus, no un segundo parecer libre. Phoenix recibe la traza del turno.
 
-En la tarea de extracción, un Qwen3.5-0.8B con QLoRA sube la exactitud total de 3,08 % a 76,92 % sobre 65 órdenes que no vio en el entrenamiento. El error que queda está en las fechas relativas y en confundir «quitar turno» con «ausencia». Esa es la señal que el DPO debería usar. Hoy esa señal es simulada (29 correcciones), no hay delta de v2 en este árbol, y Grok no entró a la tabla. Las pruebas con usuarios no se han hecho.
+En la tarea de extracción, un Qwen3.5-0.8B con QLoRA sube la exactitud total de 3,08 % a 76,92 % sobre 65 órdenes que no vio en el entrenamiento, y el DPO v2 la deja en 83,08 % (IC 95 % [73,85 %, 90,77 %], reporte E2). El intervalo se solapa con el de v1. El error que el DPO sí movió es confundir «quitar turno» con «ausencia» (acción de 50 % a 90 % en ese subgrupo, n = 20). Las fechas no se movieron. Esa señal es simulada (29 correcciones). Grok no entró a la tabla. Las pruebas con usuarios no se han hecho; el protocolo sí está escrito.
 
 Esas tres ausencias son el trabajo que falta. No cambian lo que sí está construido: el camino de la orden a la fila `origen = 'tarjeta'`, con un veredicto que la persona puede leer antes de tocar Aprobar.
 
@@ -627,7 +687,18 @@ Entrenamiento y evaluación del extractor (venv GPU de C3, pesos no versionados)
 ..\relevo-gpu-venv\Scripts\python.exe ml\evaluar_extraccion.py --proveedor lora --adapter ml\models\extractor-v1 --salida ml\runs\eval-lora.json
 ```
 
-Evaluaciones que este árbol todavía no tiene como comando: [F1: `npm run eval:extraccion`], [F1: `evaluacion/evaluar_citas.ts`], [F1: `npm run eval:aprobaciones`], [E2: `ml/comparar_versiones.py` y `npm run extractor:dev`].
+Evaluaciones de F1 y comparación de E2, con la base activa. La extracción pide el venv de GPU y los adaptadores (en `ml/models/` o en el worktree hermano `e2-dpo`):
+
+```text
+npm run eval:extraccion
+npm run eval:citas
+npm run eval:auditor
+npm run eval:aprobaciones
+..\relevo-gpu-venv\Scripts\python.exe -u ml\comparar_versiones.py
+npm run extractor:dev
+```
+
+`npm run eval:extraccion` llama a `evaluacion/evaluar_extraccion.py`. `npm run eval:citas` llama a `evaluacion/evaluar_citas.ts`. `npm run eval:aprobaciones` llama a `evaluacion/evaluar_aprobaciones.ts`. `eval:extraccion` y `eval:citas` dejan Grok y el juez en pendiente si no hay `XAI_API_KEY`. `extractor:dev` escucha en el puerto 8642 y prefiere el adaptador v2.
 
 Phoenix, sin tocar la base que ya ocupa el puerto 5432:
 
@@ -645,9 +716,9 @@ mcp/                      Tools MCP
 auditor/                  Servicio A2A y reglas
 db/                       Migraciones, seed, runner
 data/                     Nómina sintética y órdenes (train/val/test)
-ml/                       Indexación, servicio embed, extractor QLoRA
+ml/                       Indexación, servicio embed, extractor QLoRA, ml/dpo/, servir_extractor.py
 corpus/                   fuentes.json (raw/ no se versiona)
-evaluacion/               Prevista por F1; no está en este árbol
+evaluacion/               Suite F1: cuatro métricas, protocolo y resultados
 informe/                  Este informe, la presentación y el guion
 docs/                     Arquitectura, plan, fuentes del curso, specs y reportes
 docker-compose.yml        PostgreSQL 17 + pgvector, y Phoenix

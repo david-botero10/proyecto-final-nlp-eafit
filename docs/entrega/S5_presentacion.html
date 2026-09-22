@@ -107,7 +107,7 @@ Norma: CST art. 179, chunk 193, fuente `cst_pr006`.</script>
 | 3 | art. 161 | Jornada y nocturno |
 
 La UI numera Fuentes con enlace al Senado.</script>
-<aside class="notes">Fuente: reporte C1. En léxico puro (reporte B2) «recargo nocturno» abría por el art. 161, y «trabajo nocturno porcentaje» no devolvía nada. Digan esa diferencia. El juez de fidelidad y el recall@k están pendientes: [F1: recall y juez].</aside>
+<aside class="notes">Fuente: reporte C1 para el humo, reporte F1 para las 20 preguntas. En léxico puro (reporte B2) «recargo nocturno» abría por el art. 161, y «trabajo nocturno porcentaje» no devolvía nada. Digan esa diferencia. F1, modo híbrido, 20 de 20: recall@3 97,50 %, recall@5 100 %, recall@8 100 %, MRR 0,933. El juez de fidelidad sigue pendiente: no había clave de xAI. El reporte F1 no trae la corrida léxica de esas 20 preguntas.</aside>
 </section>
 <section>
 <script type="text/plain" class="fuente-slide"># Tarjeta y auditor
@@ -122,7 +122,7 @@ El auditor contesta antes de que aparezca la tarjeta.
 | aprobado | Todo pasa | Aprobar |
 
 10 escenarios del reporte D2 cayeron en la clase que el caso buscaba.</script>
-<aside class="notes">El tope es 44 h (Ley 2101, desde julio de 2026), aunque el art. 161 indexado hable de 42 h tras la Ley 2466. Díganlo antes de que lo pregunten. Precisión por clase y matriz: [F1: matriz 3×3].</aside>
+<aside class="notes">El tope es 44 h (Ley 2101, desde julio de 2026), aunque el art. 161 indexado hable de 42 h tras la Ley 2466. Díganlo antes de que lo pregunten. F1: 20/20, precisión 100 % en aprobado (3), observaciones (9) y rechazado (8). La matriz es diagonal. Las 10 trampas nuevas están en el informe §8.3. Es cumplimiento de las reglas, no un rotulado humano independiente.</aside>
 </section>
 <section>
 <script type="text/plain" class="fuente-slide"># Extractor afinado
@@ -135,8 +135,8 @@ Qwen3.5-0.8B, QLoRA 4-bit, test congelado n = 65.
 | Fechas (F1) | 19,18 % | 84,62 % |
 | Acción | 55,38 % | 84,62 % |
 
-Gana en todos los campos. La acción sigue siendo el peor.</script>
-<aside class="notes">Fuente: reporte C3. El 3 % y el 77 % de la spec son ese 3,08 y ese 76,92, redondeados. Es contra el base, no contra Grok: no había clave. Pico de VRAM 2 871 MiB en una 4060 de 8 GB. El error que queda: «no le deje turno el 12 de octubre» salió como ausencia y con otra fecha.</aside>
+Gana en todos los campos frente al base. En v1, la acción sigue siendo el peor campo (84,62 %).</script>
+<aside class="notes">Fuente: reporte C3. El 3 % y el 77 % de la spec son ese 3,08 y ese 76,92, redondeados. Es contra el base, no contra Grok: no había clave. Pico de VRAM 2 871 MiB en una 4060 de 8 GB. El error que queda en C3: «no le deje turno el 12 de octubre» salió como ausencia y con otra fecha. v2 sube la acción a 96,92 %; el detalle y el intervalo están en la diapositiva de DPO.</aside>
 </section>
 <section>
 <script type="text/plain" class="fuente-slide"># Ciclo DPO
@@ -146,11 +146,11 @@ Tarjeta → decisión → `pares_preferencia` → DPO sobre v1 → mismo test.
 Hoy, en la base local, sin re-sembrar:
 
 - 120 decisiones, todas del `simulador`
-- 91 aprobaciones limpias, 29 correcciones
+- 91 aprobaciones limpias, 29 correcciones, 29 pares DPO
 - 0 decisiones de una persona
-- `usado_en_version` vacío
-- [E2: delta v1 → v2 con intervalo]</script>
-<aside class="notes">La pregunta de la propuesta: ¿un modelo pequeño, afinado con las correcciones de sus usuarios, puede superar al de frontera en esta tarea, sin sacar los datos de la organización? Hoy solo podemos decir que supera a su base. Las 91 aprobaciones no son pares DPO: `rechazada` va null. La señal útil son las 29 correcciones, y son simuladas.</aside>
+- Exactitud total: 76,92 % → 83,08 % (+6,15 pp)
+- IC 95 %: v1 [66,15 %, 87,69 %], v2 [73,85 %, 90,77 %]</script>
+<aside class="notes">Fuente: reporte E2. La pregunta de la propuesta: ¿un modelo pequeño, afinado con las correcciones de sus usuarios, puede superar al de frontera en esta tarea, sin sacar los datos de la organización? Hoy supera a su base y el DPO suma 6,15 puntos, con intervalos que se solapan. Las 91 aprobaciones no son pares DPO: `rechazada` va null. La señal útil son las 29 correcciones, y son simuladas. El DPO corrigió la acción `quitar` (50 % → 90 %), no el calendario. Loss 0,693 → 0,586, `rewards/accuracies` 0,6875, 206,434 s, pico 8 428,99 MiB. Grok sigue pendiente.</aside>
 </section>
 <section>
 <script type="text/plain" class="fuente-slide"># Observabilidad
@@ -168,13 +168,13 @@ Guardrails: 400 si el mensaje va vacío o pasa de 2 000 caracteres, 429 a las 30
 
 | Métrica | Qué hay hoy | Qué falta |
 |---|---|---|
-| Extracción | 3,08 % → 76,92 %, n = 65 | Intervalo, Grok, v2 |
-| Citas | Híbrido recupera el art. 168 | Recall@k y juez |
-| Auditor | 10 de 10 en la trampa diseñada | Matriz 3×3 |
-| Aprobación | 91/120 simuladas, 0 humanas | Sesiones |
+| Extracción | 3,08 % → 76,92 % → 83,08 %, n = 65. IC de v2 [73,85 %, 90,77 %] | Grok |
+| Citas | Híbrido: recall@3 97,50 %, @5 y @8 100 %, MRR 0,933 | Juez LLM |
+| Auditor | 20/20. Precisión 100 %. Matriz diagonal | Rotulado humano independiente |
+| Aprobación | Simulador 75,83 % (91/120). Humanos: 0 | Sesiones |
 
-Pruebas con usuarios: pendiente de sesiones.</script>
-<aside class="notes">No conviertan 91/120 en «le atinamos al 76 % de los usuarios». Es el simulador contra la etiqueta del generador. Informe §8. Los marcadores [F1: …] los completa la ola de evaluación.</aside>
+Pruebas con usuarios: protocolo escrito, sesiones pendientes.</script>
+<aside class="notes">No conviertan 91/120 en «le atinamos al 76 % de los usuarios». Es el simulador contra la etiqueta del generador: 75,83 %. Informe §8. Los intervalos de v1 y v2 se solapan. El protocolo está en `evaluacion/PROTOCOLO_USUARIOS.md`.</aside>
 </section>
 <section>
 <script type="text/plain" class="fuente-slide"># Qué no afirmamos
@@ -191,10 +191,10 @@ Pruebas con usuarios: pendiente de sesiones.</script>
 
 Hay un camino de la orden coloquial a una fila con `origen = 'tarjeta'`, con un veredicto que se lee antes de aprobar.
 
-El extractor pequeño aprende la tarea: 3,08 % → 76,92 % contra su base.
+El extractor pequeño aprende la tarea: 3,08 % → 76,92 % → 83,08 % contra su base. Los intervalos de v1 y v2 se solapan.
 
-Falta medirlo contra Grok, falta el delta de DPO y faltan las sesiones con personas.</script>
-<aside class="notes">Cierren con esas tres frases y paren. El informe, la presentación y el guion están en `informe/`. Licencia MIT.</aside>
+Falta medirlo contra Grok y faltan las sesiones con personas.</script>
+<aside class="notes">Cierren con esas dos ausencias y paren. El delta de DPO ya está dicho: corrigió la acción, no las fechas. El informe, la presentación y el guion están en `informe/`. Licencia MIT.</aside>
 </section>
 <section>
 <script type="text/plain" class="fuente-slide"># Gracias
@@ -206,7 +206,7 @@ David Botero Londoño
 Código sintético, corpus público, licencia MIT.</script>
 <aside class="notes">Si piden reproducir: `README.md`, anexo B del informe. Gates: `npm run lint`, `npm test`, `npm run build`. Python 3.11 para el venv de gates.</aside>
 </section>
-  </div>
+</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
