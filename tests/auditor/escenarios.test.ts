@@ -232,6 +232,8 @@ describe("escenarios con trampa del auditor", () => {
         turno: "M",
         fechas: ["2026-09-28", "2026-10-04"],
         justificacion: null,
+        accion: "asignar",
+        proveedor: "xai",
       },
       acciones: [
         {

@@ -1,4 +1,5 @@
-import type { Propuesta, Turno, VeredictoAuditor } from "@/lib/tipos";
+import type { PropuestaAuditable as Propuesta } from "@/lib/a2a/cliente";
+import type { Turno, VeredictoAuditor } from "@/lib/tipos";
 
 /** Empleado 2 del seed: Elizabeth María López, activo. */
 export const EMPLEADO_ROTATIVO = 2;
@@ -24,6 +25,8 @@ export function propuestaTurno(parcial: {
       turno: parcial.turno,
       fechas: [parcial.fecha],
       justificacion: null,
+      accion: "asignar",
+      proveedor: "xai",
     },
     acciones: [
       {

@@ -655,6 +655,27 @@ export async function ejecutarPropuesta(
   }
 }
 
+/**
+ * Guarda el veredicto del auditor A2A en la propuesta pendiente.
+ * Solo se acepta sobre propuestas pendientes: una decidida ya no cambia.
+ */
+export async function guardarVeredicto(
+  sql: Sql,
+  propuestaId: string,
+  veredicto: VeredictoAuditor,
+): Promise<boolean> {
+  if (!UUID.test(propuestaId) || veredicto.propuesta_id !== propuestaId) {
+    return false;
+  }
+  const filas = await sql<{ id: string }[]>`
+    UPDATE propuestas
+    SET veredicto_auditor = ${sql.json(jsonValor(veredicto))}::jsonb
+    WHERE id = ${propuestaId}::uuid AND estado = 'pendiente'
+    RETURNING id
+  `;
+  return filas.length > 0;
+}
+
 export async function leerPropuesta(
   sql: Sql,
   id: string,

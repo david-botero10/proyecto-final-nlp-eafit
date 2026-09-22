@@ -1,4 +1,10 @@
 import type { Propuesta, VeredictoAuditor } from "../tipos";
+
+/** Lo que el auditor necesita de una propuesta (sin campos de UI ni estado). */
+export type PropuestaAuditable = Pick<
+  Propuesta,
+  "propuesta_id" | "orden_texto" | "extraccion" | "acciones" | "contexto"
+>;
 import {
   agentCardSchema,
   solicitudSchema,
@@ -31,7 +37,7 @@ export function olvidarCacheAuditor(): void {
 
 /** Arma la solicitud A2A a partir de la propuesta del asistente. */
 export function solicitudDesdePropuesta(
-  propuesta: Propuesta,
+  propuesta: PropuestaAuditable,
 ): SolicitudAuditoria {
   return solicitudSchema.parse({
     propuesta_id: propuesta.propuesta_id,
@@ -114,7 +120,7 @@ export async function auditarSolicitud(
 
 /** Firma que usa el asistente. `null` si el auditor no contesta a tiempo. */
 export async function auditarPropuesta(
-  propuesta: Propuesta,
+  propuesta: PropuestaAuditable,
 ): Promise<VeredictoAuditor | null> {
   try {
     return await auditarSolicitud(solicitudDesdePropuesta(propuesta));

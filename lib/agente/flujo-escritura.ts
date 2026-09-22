@@ -2,6 +2,10 @@ import { fechaIsoBogota } from "@/lib/agente/fechas";
 import { llamarHerramienta } from "@/lib/agente/mcp";
 import type { Accion, Extraccion, Propuesta, TipoAusencia } from "@/lib/tipos";
 import { extraerOrden, type OpcionesExtraccion } from "./extraccion";
+import { auditarPropuesta } from "@/lib/a2a/cliente";
+import { crearCliente } from "@/lib/db/cliente";
+import { guardarVeredicto } from "@/mcp/escrituras";
+import type { VeredictoAuditor } from "@/lib/tipos";
 
 export type EmpleadoBreve = {
   id: number;
@@ -20,6 +24,8 @@ export type ResultadoOrden =
 
 export type DepsFlujo = {
   hoy?: string;
+  /** Auditor A2A. Sustituible en tests; `null` = sin auditar. */
+  auditar?: (propuesta: Propuesta) => Promise<VeredictoAuditor | null>;
   extraer?: (orden: string, fecha: string) => Promise<Extraccion>;
   opcionesExtraccion?: OpcionesExtraccion;
   leerEmpleados?: () => Promise<EmpleadoBreve[] | { error: string }>;
@@ -216,6 +222,28 @@ async function crearPorDefecto(
   return resultado as Propuesta;
 }
 
+/**
+ * Pide el veredicto al auditor A2A y lo persiste en la propuesta.
+ * Si el auditor no responde, la tarjeta sale «sin auditar» (nunca bloquea).
+ */
+async function auditarPorDefecto(
+  propuesta: Propuesta,
+): Promise<VeredictoAuditor | null> {
+  const veredicto = await auditarPropuesta(propuesta);
+  if (!veredicto) {
+    return null;
+  }
+  const { sql, cerrar } = crearCliente();
+  try {
+    await guardarVeredicto(sql, propuesta.propuesta_id, veredicto);
+  } catch {
+    // El veredicto igual viaja a la tarjeta; la persistencia es best-effort.
+  } finally {
+    await cerrar();
+  }
+  return veredicto;
+}
+
 /** Extrae, valida con lecturas y deja la propuesta pendiente. */
 export async function procesarOrdenEscritura(
   ordenTexto: string,
@@ -276,10 +304,19 @@ export async function procesarOrdenEscritura(
     if (esError(creada)) {
       return { ok: false, texto: creada.error };
     }
+    let veredicto: VeredictoAuditor | null = null;
+    try {
+      veredicto = deps?.auditar
+        ? await deps.auditar(creada)
+        : await auditarPorDefecto(creada);
+    } catch {
+      veredicto = null;
+    }
+    const propuesta: Propuesta = { ...creada, veredicto_auditor: veredicto };
     return {
       ok: true,
-      propuesta: creada,
-      texto: textoPropuesta(creada.acciones.length),
+      propuesta,
+      texto: textoPropuesta(propuesta.acciones.length),
     };
   } catch (error) {
     return { ok: false, texto: mensajeSeguro(error) };

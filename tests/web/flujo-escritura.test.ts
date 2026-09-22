@@ -134,4 +134,48 @@ describe("flujo de orden de escritura", () => {
       },
     ]);
   });
+  it("adjunta el veredicto del auditor A2A a la propuesta y tolera que no responda", async () => {
+    const deps = {
+      hoy: "2026-09-21",
+      extraer: async () => EXTRACCION,
+      leerEmpleados: async () => [{ id: 24, nombre: "Ana Mery Montoya Patiño" }],
+      leerTurnos: async () => ({ asignaciones: [] }),
+      leerAusencias: async () => ({ ausencias: [] }),
+      crear: async () => VISTA,
+    };
+
+    const veredicto = {
+      propuesta_id: VISTA.propuesta_id,
+      veredicto: "observaciones" as const,
+      razones: ["El 2026-09-28 cae en lunes festivo."],
+      normas_citadas: [{ fuente: "cst_pr006", articulo: "179", chunk_id: 193 }],
+      verificaciones: {
+        empleado_existe: true,
+        sin_solapes: true,
+        jornada_dentro_de_limites: true,
+      },
+    };
+    const conVeredicto = await procesarOrdenEscritura("ponle la mañana a Ana", {
+      ...deps,
+      auditar: async (propuesta) => {
+        expect(propuesta.propuesta_id).toBe(VISTA.propuesta_id);
+        return veredicto;
+      },
+    });
+    expect(conVeredicto.ok).toBe(true);
+    if (conVeredicto.ok) {
+      expect(conVeredicto.propuesta.veredicto_auditor).toEqual(veredicto);
+    }
+
+    const sinAuditor = await procesarOrdenEscritura("ponle la mañana a Ana", {
+      ...deps,
+      auditar: async () => {
+        throw new Error("auditor caído");
+      },
+    });
+    expect(sinAuditor.ok).toBe(true);
+    if (sinAuditor.ok) {
+      expect(sinAuditor.propuesta.veredicto_auditor).toBeNull();
+    }
+  });
 });
