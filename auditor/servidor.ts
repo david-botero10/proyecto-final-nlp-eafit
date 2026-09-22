@@ -3,7 +3,9 @@ import type { Socket } from "node:net";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
+import { SemanticConventions } from "@arizeai/openinference-semantic-conventions";
 import { solicitudSchema } from "../lib/a2a/esquemas";
+import { atributosAgente, conSpan } from "../lib/observabilidad/spans";
 import { construirAgentCard } from "./agent-card";
 import { cerrarClientesAuditor } from "./mcp";
 import { redactarRazones } from "./razones";
@@ -190,7 +192,16 @@ async function manejarA2a(
   }
 
   try {
-    const veredicto = await auditarCuerpo(parsed.data);
+    const veredicto = await conSpan(
+      "auditor.verificar",
+      atributosAgente(parsed.data.propuesta_id),
+      async (span) => {
+        const obtenido = await auditarCuerpo(parsed.data);
+        span.setAttribute("veredicto", obtenido.veredicto);
+        span.setAttribute(SemanticConventions.OUTPUT_VALUE, obtenido.veredicto);
+        return obtenido;
+      },
+    );
     responder(res, 200, {
       jsonrpc: "2.0",
       id,
@@ -272,6 +283,8 @@ export function iniciarAuditor(opciones?: {
 }
 
 async function main(): Promise<void> {
+  const { iniciarTelemetria } = await import("../lib/observabilidad/otel");
+  iniciarTelemetria();
   const puerto = Number(process.env.AUDITOR_PORT ?? PUERTO_POR_DEFECTO);
   const auditor = await iniciarAuditor({ puerto });
   console.log(`Auditor A2A escuchando en ${auditor.url}`);

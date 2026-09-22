@@ -1,15 +1,27 @@
+import { auditarPropuesta } from "@/lib/a2a/cliente";
 import { fechaIsoBogota } from "@/lib/agente/fechas";
 import { llamarHerramienta } from "@/lib/agente/mcp";
-import type { Accion, Extraccion, Propuesta, TipoAusencia } from "@/lib/tipos";
-import { extraerOrden, type OpcionesExtraccion } from "./extraccion";
-import { auditarPropuesta } from "@/lib/a2a/cliente";
 import { crearCliente } from "@/lib/db/cliente";
+import {
+  equipoAcotado,
+  mensajePropuestaFuera,
+  type PerfilAlcance,
+} from "@/lib/guardrails/alcance";
+import { vincularPropuesta } from "@/lib/memoria/conversaciones";
+import {
+  atributosAgente,
+  atributosLlm,
+  conSpan,
+} from "@/lib/observabilidad/spans";
+import { SemanticConventions } from "@arizeai/openinference-semantic-conventions";
 import { guardarVeredicto } from "@/mcp/escrituras";
-import type { VeredictoAuditor } from "@/lib/tipos";
+import type { Accion, Extraccion, Propuesta, TipoAusencia, VeredictoAuditor } from "@/lib/tipos";
+import { extraerOrden, type OpcionesExtraccion } from "./extraccion";
 
 export type EmpleadoBreve = {
   id: number;
   nombre: string;
+  equipo?: string;
 };
 
 export type EntradaCrearFlujo = {
@@ -40,6 +52,9 @@ export type DepsFlujo = {
     empleadoId: number,
   ) => Promise<unknown>;
   crear?: (entrada: EntradaCrearFlujo) => Promise<Propuesta | { error: string }>;
+  perfil?: PerfilAlcance | null;
+  conversacionId?: string | null;
+  vincular?: (propuestaId: string) => Promise<void>;
 };
 
 function normalizar(texto: string): string {
@@ -180,11 +195,17 @@ async function empleadosPorDefecto(): Promise<EmpleadoBreve[] | { error: string 
     if (!fila || typeof fila !== "object") {
       return [];
     }
-    const empleado = fila as { id?: unknown; nombre?: unknown };
+    const empleado = fila as { id?: unknown; nombre?: unknown; equipo?: unknown };
     if (typeof empleado.id !== "number" || typeof empleado.nombre !== "string") {
       return [];
     }
-    return [{ id: empleado.id, nombre: empleado.nombre }];
+    return [
+      {
+        id: empleado.id,
+        nombre: empleado.nombre,
+        equipo: typeof empleado.equipo === "string" ? empleado.equipo : undefined,
+      },
+    ];
   });
 }
 
@@ -251,9 +272,18 @@ export async function procesarOrdenEscritura(
 ): Promise<ResultadoOrden> {
   const hoy = deps?.hoy ?? fechaIsoBogota();
   try {
-    const extraccion = deps?.extraer
-      ? await deps.extraer(ordenTexto, hoy)
-      : await extraerOrden(ordenTexto, hoy, deps?.opcionesExtraccion);
+    const extraccion = await conSpan(
+      "relevo.extraccion",
+      atributosLlm(ordenTexto),
+      async (span) => {
+        const obtenida = deps?.extraer
+          ? await deps.extraer(ordenTexto, hoy)
+          : await extraerOrden(ordenTexto, hoy, deps?.opcionesExtraccion);
+        span.setAttribute("proveedor", obtenida.proveedor);
+        span.setAttribute(SemanticConventions.OUTPUT_VALUE, obtenida.proveedor);
+        return obtenida;
+      },
+    );
     const accionesOError = accionesDesdeExtraccion(
       extraccion,
       0,
@@ -272,6 +302,16 @@ export async function procesarOrdenEscritura(
     const resuelto = resolverEmpleado(extraccion.empleado, leidos);
     if ("error" in resuelto) {
       return { ok: false, texto: resuelto.error };
+    }
+    const acotado = equipoAcotado(deps?.perfil);
+    if (acotado) {
+      const elegido = leidos.find((empleado) => empleado.id === resuelto.id);
+      if (elegido?.equipo && elegido.equipo !== acotado) {
+        return {
+          ok: false,
+          texto: mensajePropuestaFuera(acotado, elegido.nombre, elegido.equipo),
+        };
+      }
     }
     const acciones = accionesOError.map((accion) => ({
       ...accion,
@@ -304,11 +344,42 @@ export async function procesarOrdenEscritura(
     if (esError(creada)) {
       return { ok: false, texto: creada.error };
     }
+    if (deps?.conversacionId) {
+      try {
+        if (deps.vincular) {
+          await deps.vincular(creada.propuesta_id);
+        } else {
+          const { sql, cerrar } = crearCliente();
+          try {
+            await vincularPropuesta(sql, creada.propuesta_id, deps.conversacionId);
+          } finally {
+            await cerrar();
+          }
+        }
+      } catch {
+        // La tarjeta no depende de que el hilo quede enlazado.
+      }
+    }
     let veredicto: VeredictoAuditor | null = null;
     try {
-      veredicto = deps?.auditar
-        ? await deps.auditar(creada)
-        : await auditarPorDefecto(creada);
+      veredicto = await conSpan(
+        "relevo.auditoria",
+        {
+          ...atributosAgente(ordenTexto),
+          propuesta_id: creada.propuesta_id,
+        },
+        async (span) => {
+          const obtenido = deps?.auditar
+            ? await deps.auditar(creada)
+            : await auditarPorDefecto(creada);
+          span.setAttribute("veredicto", obtenido?.veredicto ?? "sin_auditar");
+          span.setAttribute(
+            SemanticConventions.OUTPUT_VALUE,
+            obtenido?.veredicto ?? "sin_auditar",
+          );
+          return obtenido;
+        },
+      );
     } catch {
       veredicto = null;
     }
