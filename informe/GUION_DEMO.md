@@ -1,93 +1,240 @@
-# Guion de demo — Relevo (8 minutos)
+# Runbook de la demo en vivo — Relevo
 
-Sustentación de SI7016. Fecha de referencia de los ejemplos: **lunes 21 de septiembre de 2026** (America/Bogota). Si la máquina está en otro día, no cambien las fechas absolutas de este guion: ya vienen escritas.
+Sustentación de SI7016. Demo de unos 5 minutos, cuatro interacciones. Para el hilo de la charla y la teoría de cada lámina, ver `informe/GUION_PRESENTACION.md` (lámina 4).
 
-Perfil de toda la demo: **Coordinadora de enfermería**. No cambien el selector a mitad del guion: cambiar de usuario borra el hilo.
+Verificada el 12 de octubre de 2026 con Grok 4.7 (`RELEVO_MODELO=grok-4.7`). Todos los comandos son de PowerShell, desde la raíz del repositorio.
 
-No usen el ejemplo de la pantalla «Ponle el de la mañana a Ana toda la otra semana». Ana Mery Montoya Patiño es de recepción. Con este perfil el sistema debe negarse. Doris Herrera Sánchez (empleado 5) es de enfermería y el nombre no choca con otra persona.
+Regla de oro: **el modelo no escribe; la persona aprueba**. Si algo sale distinto de lo esperado, se dice lo que llegó. No se corrige en voz alta como si el sistema hubiera acertado.
 
-## Checklist previo (10 puntos)
+## 1. Antes de la clase (el día anterior)
 
-1. PostgreSQL sigue en `localhost:5432`, base `relevo`, healthy. No ejecuten `docker compose down` ni `db/seed.py --reseed`. En esta máquina el contenedor que ya ocupa el puerto es `proyectofinalnlp2026-db-1`.
-2. Phoenix arriba, sin tocar esa base: `docker compose up -d phoenix`. Abre `http://localhost:6006`.
-3. `.env` local (no se proyecta, no se commitea) con `XAI_API_KEY`. El resto puede quedar como `.env.example`: `RELEVO_MODELO=grok-4.6`, `EMBED_SERVICE_URL=http://localhost:8631`, `AUDITOR_URL=http://127.0.0.1:8641`, `PHOENIX_COLLECTOR_ENDPOINT=http://localhost:6006/v1/traces`, `OTEL_SERVICE_NAME=relevo`. `EXTRACTOR_URL` vacío: la extracción de la demo la hace Grok.
-4. Servicio de embeddings caliente. En otra terminal, venv de ML fuera del clone: `npm run embed:dev`. `GET http://127.0.0.1:8631/salud` devuelve `{"ok":true}`. Hagan una consulta de prueba antes de empezar: la primera carga de bge-m3 en CPU pasa de 3 s y esa consulta cae a léxico (reporte C1).
-5. Auditor: `npm run auditor:dev`. `GET http://127.0.0.1:8641/.well-known/agent.json` devuelve `"name":"Relevo Auditor"`.
-6. App: `npm run dev`. La página es `http://localhost:3000`, encabezado «Relevo», subtítulo «Asistente de turnos y ausencias».
-7. Selector en **Coordinadora de enfermería** e hilo vacío. Si quedó otra conversación en el navegador, cambien el selector a Jefe de vigilancia y vuelvan a Coordinadora de enfermería: eso crea un id nuevo.
-8. Cliente SQL abierto contra la misma base. Una línea basta: `docker exec -it proyectofinalnlp2026-db-1 psql -U relevo -d relevo`.
-9. En Phoenix, localicen el proyecto y dejen visible el filtro del servicio `relevo`.
-10. Plan B ensayado una vez (sección final): sin clave, el chat dice que configure `XAI_API_KEY`; el veredicto del domingo se muestra con `curl` al auditor, que no necesita xAI.
+1. Traer lo último y las dependencias:
 
-## Minuto 0:00 — Qué hay en pantalla
+   ```powershell
+   git pull
+   npm ci
+   ```
 
-Servicios ya levantados. El navegador en el chat, el selector visible, Phoenix en otra ventana, la terminal de `psql` detrás. No arranquen contenedores en vivo.
+2. `.env` en la raíz (no se proyecta, no se commitea, nunca se abre frente al público). Mínimo:
 
-Señal en voz: «Consultar no pide permiso. Escribir, sí. Vamos a hacer las dos cosas, y al final la fila.»
+   ```text
+   XAI_API_KEY=<la clave, solo en este archivo>
+   RELEVO_MODELO=grok-4.7
+   EXTRACTOR_URL=
+   ```
 
-## Minuto 0:40 — Consulta de datos, con el perfil
+   `EXTRACTOR_URL` vacío: la extracción de la demo la hace Grok y la app no intenta llamar al extractor local. (`.env.example` trae `http://127.0.0.1:8642`; si el servicio está apagado la app cae a Grok de todos modos, pero vacío evita el intento.) El resto de variables pueden quedar como en `.env.example` (`AUDITOR_URL=http://127.0.0.1:8641`, `EMBED_SERVICE_URL=http://localhost:8631`, `PHOENIX_COLLECTOR_ENDPOINT=http://localhost:6006/v1/traces`).
 
-Escriban exactamente:
+3. Base arriba y con datos. No se re-siembra ni se ejecuta `docker compose down -v`:
+
+   ```powershell
+   docker compose up -d db
+   docker compose ps
+   docker compose exec -T db psql -U relevo -d relevo -c "SELECT (SELECT count(*) FROM chunks) AS chunks, (SELECT count(*) FROM documentos) AS documentos, (SELECT count(*) FROM empleados) AS empleados, (SELECT count(*) FROM propuestas WHERE orden_texto LIKE '[simulador%') AS propuestas_simulador;"
+   ```
+
+   Valores esperados: `chunks` 589, `documentos` 20, `empleados` 40, `propuestas_simulador` 120.
+
+4. **Dejar la base limpia de ensayos anteriores.** Primero se mira qué se borraría; las filas del simulador (`orden_texto` que empieza por `[simulador`) y toda la nómina del seed quedan intactas:
+
+   ```powershell
+   $previa = @'
+   SELECT p.id, p.usuario, p.estado, left(p.orden_texto, 60) AS orden
+   FROM propuestas p
+   WHERE p.orden_texto NOT LIKE '[simulador%'
+   ORDER BY p.creado_en;
+   SELECT count(*) AS asignaciones_tarjeta FROM asignaciones WHERE origen = 'tarjeta';
+   SELECT count(*) AS asignaciones_de_propuestas_demo_no_tarjeta
+   FROM asignaciones
+   WHERE propuesta_id IN (SELECT id FROM propuestas WHERE orden_texto NOT LIKE '[simulador%')
+     AND origen <> 'tarjeta';
+   '@
+   $previa | docker compose exec -T db psql -U relevo -d relevo
+   ```
+
+   La última consulta debe dar 0 (la demo no cancela filas del seed). Si da más de 0, **no continúen**: revisen a mano qué hizo ese ensayo.
+
+   Borrado, en una transacción, solo de lo creado por los ensayos (filas `origen = 'tarjeta'`, y las propuestas pendientes o decididas que no son del simulador, con sus aprobaciones y pares):
+
+   ```powershell
+   $reset = @'
+   BEGIN;
+   CREATE TEMP TABLE demo_propuestas AS
+     SELECT id FROM propuestas WHERE orden_texto NOT LIKE '[simulador%';
+   DELETE FROM pares_preferencia WHERE propuesta_id IN (SELECT id FROM demo_propuestas);
+   DELETE FROM aprobaciones      WHERE propuesta_id IN (SELECT id FROM demo_propuestas);
+   DELETE FROM asignaciones      WHERE origen = 'tarjeta' AND propuesta_id IN (SELECT id FROM demo_propuestas);
+   DELETE FROM ausencias         WHERE propuesta_id IN (SELECT id FROM demo_propuestas);
+   DELETE FROM propuestas        WHERE id IN (SELECT id FROM demo_propuestas);
+   COMMIT;
+   SELECT
+     (SELECT count(*) FROM propuestas WHERE orden_texto LIKE '[simulador%') AS propuestas_simulador,
+     (SELECT count(*) FROM propuestas WHERE orden_texto NOT LIKE '[simulador%') AS propuestas_demo,
+     (SELECT count(*) FROM asignaciones WHERE origen = 'tarjeta') AS asignaciones_tarjeta;
+   '@
+   $reset | docker compose exec -T db psql -U relevo -d relevo
+   ```
+
+   Esperado: `propuestas_simulador` 120, `propuestas_demo` 0, `asignaciones_tarjeta` 0. Si `propuestas_simulador` no es 120, algo se borró de más: paren y avisen al equipo. Las conversaciones y mensajes de los ensayos pueden quedar; no afectan la demo.
+
+5. **Calentamiento.** Con la pila mínima de la sección 3 arriba, correr una vez las cuatro interacciones de la sección 5 (incluida la aprobación) y luego repetir el reseteo del paso 4. La primera petición compila rutas de Next y es lenta; la segunda ya es la real.
+
+6. **Grabar la demo.** Durante ese ensayo, grabar la pantalla completa de las cuatro interacciones (video con voz opcional) y guardar el archivo en `docs/entrega/`. Es el plan B si falla la red.
+
+## 2. Memoria: pila mínima
+
+Esta máquina tiene 15,7 GB y estaba en unos 2,5 GB libres. Pila recomendada para la demo:
+
+| Servicio | ¿Encendido? | Por qué |
+|---|---|---|
+| PostgreSQL (`db`) | Sí | Nómina, corpus, propuestas |
+| Auditor (`npm run auditor:dev`, puerto 8641) | Sí | Veredicto de la tarjeta por A2A |
+| Web (`npm run dev`, puerto 3000) | Sí | El chat |
+| Servicio de embeddings (`npm run embed:dev`, puerto 8631) | **No** | bge-m3 pesa; con poca RAM compite con todo lo demás |
+| Extractor local (`npm run extractor:dev`, puerto 8642) | **No** | Necesita GPU y memoria; la extracción la hace Grok |
+| Phoenix (`docker compose up -d phoenix`, puerto 6006) | Solo si sobra RAM | Es vistoso pero no hace falta para nada de lo demás |
+
+Sin el servicio de embeddings, la búsqueda de normas **cae a modo léxico y aun así responde correctamente** (verificado el 12 de octubre: el recargo nocturno salió con el 35 % y los artículos 168, 169 y 134). Lo que cambia: las cifras de recuperación de la presentación (recall@5 100 %, MRR 0,933) son del modo híbrido. Si preguntan, se dice: «hoy, por memoria, la demo corre en modo léxico; las métricas son del híbrido».
+
+Antes de empezar:
+
+```powershell
+# Memoria física libre, en GB
+[math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB, 1)
+
+# Contenedores de otros proyectos que estén corriendo
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Ports}}"
+```
+
+- Cerrar navegadores con muchas pestañas, IDE, Teams, Slack y similares.
+- Detener los contenedores de **otros** proyectos (`docker stop <nombre>`). No detener el de este proyecto.
+- Objetivo: más de 4 GB libres. Si no se llega, no encender Phoenix.
+
+## 3. Treinta minutos antes
+
+En orden. Una terminal por servicio, en la raíz del repositorio.
+
+```powershell
+# Terminal 1 — base
+docker compose up -d db
+docker compose ps          # db debe estar "healthy"
+```
+
+```powershell
+# Terminal 2 — auditor (puerto 8641)
+npm run auditor:dev
+```
+
+```powershell
+# Terminal 3 — web (http://localhost:3000)
+npm run dev
+```
+
+Opcional, solo si la memoria alcanza:
+
+```powershell
+docker compose up -d phoenix     # http://localhost:6006
+```
+
+Chequeos de salud, desde una cuarta terminal:
+
+```powershell
+# El auditor responde con su Agent Card (debe aparecer "Relevo Auditor")
+curl.exe -s http://127.0.0.1:8641/.well-known/agent.json
+
+# La web responde 200
+curl.exe -s -o NUL -w "%{http_code}`n" http://localhost:3000
+```
+
+Luego:
+
+1. Abrir `http://localhost:3000` (encabezado «Relevo», subtítulo «Asistente de turnos y ausencias»). Hacer zoom del navegador para que se lea desde atrás.
+2. Un **ensayo completo** de las cuatro interacciones (sección 5), seguido del reseteo del paso 1.4 de este documento. Es el último ensayo: después de él, la base queda limpia.
+3. Cerrar la pestaña del ensayo, abrir una nueva y dejar el selector en **Gerencia** con el hilo vacío. Terminal de `psql` a mano, por si se quiere mostrar la fila:
+
+   ```powershell
+   docker compose exec db psql -U relevo -d relevo
+   ```
+
+4. Verificar que `.env` no esté abierto en ningún editor visible.
+
+## 4. Datos que conviene tener presentes
+
+- Fecha de la máquina: «el próximo domingo» se resuelve contra el día de hoy en Bogotá. El 12 de octubre de 2026 (lunes) resolvió al **2026-10-18**. En otra fecha la tarjeta mostrará otro domingo; el auditor seguirá diciendo «domingo» y el artículo 179. Lo único que cambia es el número.
+- Nómina sintética: la última fecha con asignaciones del seed es el 2026-09-27; no hay solapes con fechas posteriores.
+- Alias: «Elizabeth» a secas coincide con dos personas (Elizabeth María López, de enfermería, y Elizabeth María Toro Martínez, de vigilancia). Por eso la orden de la demo lleva el nombre completo. Si el jurado pregunta, se muestra la desambiguación: es un comportamiento deseado.
+- No usar el ejemplo de la pantalla «Ponle el de la mañana a Ana…»: Ana Mery Montoya Patiño es de recepción y, con el perfil de enfermería, el sistema debe negarse.
+
+## 5. Durante la demo: las cuatro interacciones
+
+Las latencias son las verificadas el 12 de octubre. Mientras el sistema trabaja, no se queda en silencio: se cuenta lo que está pasando.
+
+### Interacción 1 — Norma (perfil **Gerencia**), unos 25 s
+
+Escribir exactamente:
 
 ```text
-¿Quién cubre el turno de la noche el sábado 26 de septiembre?
+¿Cuánto me pagan de recargo si trabajo de noche?
 ```
 
 Qué señalar:
 
-- El chip de intención, cuando aparezca: consulta de datos, no norma.
-- La respuesta debe nombrar, de enfermería, a **Diego Andrés Barreto**, **Elizabeth María López** y **Ruth González**. Esas tres filas están en el seed, turno N, estado `programada`, fecha 2026-09-26 (anexo A del informe).
-- No deben aparecer Carlos Rodríguez Camargo ni Patricia Ortega Caicedo (recepción), ni Diana Alba Hernández Díaz ni Elizabeth María Toro Martínez (vigilancia): también cubren esa noche, y el perfil las recorta.
+- El **chip de intención**: «consulta de norma» (el router, 0,95 de confianza en el ensayo).
+- El indicador **«consultando norma…»** mientras la herramienta trabaja.
+- Que el modelo **decidió buscar y buscó cuatro veces**, refinando la consulta (RAG agéntico).
+- La respuesta: **35 % de recargo**, con el art. 168 del Código Sustantivo del Trabajo, el art. 169 (base), el art. 134 (pago) y la excepción de la Ley 2101 (art. 161) para la jornada de 6 horas y 36 semanales; menciona el salario uniforme pactado.
+- El panel **Fuentes**, numerado `[n]`, con enlace al texto.
 
-Si falta un nombre o sobra alguien de otro equipo, díganlo. No lo corrijan en voz como si el sistema hubiera acertado.
+Mientras espera (unos 25 s): «El modelo está decidiendo cuántas veces buscar. Cada búsqueda es una vuelta al modelo; es el costo de que él decida, y a cambio refina la consulta».
 
-## Minuto 2:00 — Consulta normativa, con citas
+Si aparece «Esta respuesta no cita la norma; verifícala», se señala: es el guardrail funcionando.
 
-Escriban exactamente:
+### Cambio de perfil
+
+Cambiar el selector a **Coordinadora de enfermería**. Esto abre otra conversación y borra el hilo. Se hace una sola vez, aquí.
+
+### Interacción 2 — Datos del equipo (perfil **Coordinadora de enfermería**), unos 11 s
 
 ```text
-¿Cuánto es el recargo nocturno?
+¿Quiénes de mi equipo están de turno de noche el sábado 26 de septiembre?
 ```
 
 Qué señalar:
 
-- El indicador «consultando norma…» mientras la tool trabaja.
-- El panel **Fuentes**, numerado, con enlace. En el humo híbrido de C1 los dos primeros fueron el art. 169 (base del recargo) y el art. 168 (el treinta y cinco por ciento). El 168 es el que enuncia el 35 %.
-- El texto de la respuesta tiene que apoyar el porcentaje en esa cita. Si dice un número y no hay chip, el guardrail de E1 debe anexar «Esta respuesta no cita la norma; verifícala». Señalen esa frase si sale.
+- Chip: «consulta de datos».
+- El modelo llama `listar_empleados` (equipo enfermería) y `consultar_turnos` (2026-09-26, turno N): herramientas del servidor MCP.
+- Respuesta: **Diego Andrés Barreto, Elizabeth María López y Ruth González** (3 personas).
+- No aparecen las personas de recepción ni de vigilancia que también trabajan esa noche: el **perfil acota el alcance**.
 
-La primera consulta híbrida, con el modelo ya en memoria, tardó 322 ms en C1. Si esta tarda más, no la rellenen: esperen.
+Mientras espera (unos 11 s): «Esta vez no consulta la ley, consulta la base: dos herramientas MCP con filtros exactos».
 
-## Minuto 3:20 — Orden que produce tarjeta y veredicto
+Si falta un nombre o sobra alguien, se dice tal cual.
 
-Escriban exactamente:
+### Interacción 3 — Orden de escritura (mismo perfil), unos 16 s
 
 ```text
-Ponle el de la mañana a Doris Herrera Sánchez del 28 de septiembre al 4 de octubre.
+Ponle el turno de la mañana a Elizabeth María López el próximo domingo
 ```
 
 Qué señalar, en este orden:
 
-1. El texto del asistente invita a revisar la tarjeta. No dice que el cambio ya quedó hecho.
-2. La tarjeta: orden, interpretación, empleada Doris Herrera Sánchez, turno Mañana, una fila por día del 2026-09-28 al 2026-10-04.
-3. El veredicto. Esa semana no tiene turnos previos de Doris ni ausencias (anexo A), así que no hay solape duro. Sí incluye el domingo 4 de octubre, siete días y 56 h (7 × 8). El auditor debe decir **observaciones**, citar el art. 179 y marcar la jornada fuera del límite. Es el mismo criterio que los escenarios 4, 7 y 10 del reporte D2.
-4. Aprobar sigue habilitado: observaciones no bloquean. Rechazado sí lo haría.
+1. Chip: «orden de escritura». El texto del asistente invita a revisar la tarjeta y **no dice que el cambio ya está hecho**.
+2. La **tarjeta**: la orden, la interpretación (empleada, turno Mañana, fecha resuelta de «próximo domingo»: 2026-10-18 si la demo es esa semana) y la tabla de acciones.
+3. El **veredicto del auditor**: `observaciones`, «El 2026-10-18 es domingo: aplica recargo dominical», con el artículo 179 (chunk 193). Se explica que es un agente aparte, por A2A, que decide con reglas.
+4. **Aprobar** sigue habilitado: las observaciones no bloquean. Un `rechazado` sí deshabilitaría Aprobar.
 
-Si Grok deja fuera el domingo, no fuercen el discurso. Quiten o no según lo que la tarjeta muestre, y digan qué veredicto llegó. El plan B de abajo no depende de este turno.
+Mientras espera (unos 16 s): «Tres cosas pasan ahora: se extrae la orden, se crea una propuesta pendiente y se le pide el veredicto al auditor. Todavía no se ha escrito nada».
 
-## Minuto 5:00 — Corrección y aprobación
+### Interacción 4 — Aprobar (mismo perfil)
 
-1. Pulsen **Corregir**.
-2. Quiten la fila del **2026-10-03** (sábado) y la del **2026-10-04** (domingo). Deben quedar cinco mañanas: 28, 29 y 30 de septiembre, 1 y 2 de octubre. Cinco días × 8 h = 40 h, bajo el tope de 44, sin domingo y sin festivo (el 12 de octubre no entra).
-3. Confirmen la corrección. El texto esperado, por el componente de la tarjeta, empieza por «Quedó corregida».
-4. Los tres botones quedan deshabilitados.
+Pulsar **Aprobar**.
 
-Qué decir: «La fila que se escribe es la que quedó después de quitar, no la orden original.»
+Qué señalar:
 
-`aprobaciones.usuario` queda `coordinador`. Es la constante `USUARIO_TARJETA`, no el id del selector. El selector sí acotó el equipo al crear la propuesta. No lo presenten como un bug a mitad de la frase: es el comportamiento de D1.
+- El texto de resumen que empieza por «Quedó aprobada». Los tres botones quedan deshabilitados.
+- «Solo ahora se escribió, y se escribió exactamente lo que mostraba la tarjeta».
 
-## Minuto 6:20 — La fila y el par
-
-En `psql`:
+Opcional, si hay tiempo y la terminal está lista, en `psql`:
 
 ```sql
 SELECT e.nombre, t.codigo, a.fecha, a.estado, a.origen
@@ -98,39 +245,38 @@ WHERE a.origen = 'tarjeta'
 ORDER BY a.fecha;
 ```
 
-Señalen `origen = tarjeta`, turno `M`, las cinco fechas, nombre de Doris.
+Se ve una fila con `origen = tarjeta`, turno `M`, la fecha del domingo y el nombre de Elizabeth María López. Si se muestra el par de preferencia:
 
 ```sql
-SELECT p.estado, ap.decision, ap.usuario, pp.origen
+SELECT p.estado, ap.decision, ap.usuario, pp.origen, pp.rechazada IS NULL AS sin_rechazada
 FROM propuestas p
 JOIN aprobaciones ap ON ap.propuesta_id = p.id
 JOIN pares_preferencia pp ON pp.propuesta_id = p.id
-WHERE p.decidido_en IS NOT NULL
+WHERE p.orden_texto NOT LIKE '[simulador%'
 ORDER BY p.decidido_en DESC
 LIMIT 1;
 ```
 
-Señalen `estado = corregida`, `decision = corregir`, `pp.origen = correccion`. En una corrección, `rechazada` es la extracción original y `elegida` refleja las acciones que quedaron (reporte D1). No hace falta abrir el JSON entero si el tiempo aprieta: digan qué columna es la señal de DPO.
+Resultado esperado: `estado = aprobada`, `decision = aprobar`, `usuario = coordinador` (es la constante de la tarjeta, no el selector), `origen = aprobacion`, `sin_rechazada = t`. Precisión que hay que decir: en una **aprobación limpia** el par no tiene `rechazada`, así que no es un par DPO; los pares DPO nacen de las **correcciones y rechazos**. Si se quiere mostrar una corrección, se repite la interacción 3 y en vez de Aprobar se pulsa Corregir (se quita una fila) — solo con la demo ensayada.
 
-Antes de esta demo la base tenía 0 filas `origen = 'tarjeta'`. Las 120 propuestas del `simulador` no escribieron nómina. Si la consulta devuelve más de cinco filas, filtren por el nombre de Doris y por `fecha >= '2026-09-28'`.
+Cierre de una frase: «La traza no aprueba nada. La aprobación es la tarjeta, y la fila ya está en la base».
 
-## Minuto 7:10 — Traza en Phoenix
+### Si el jurado quiere ver la traza
 
-Vuelvan a `http://localhost:6006`. Abran la traza nueva del servicio `relevo`, no una vieja.
+Solo si Phoenix está arriba: abrir `http://localhost:6006`, proyecto del servicio `relevo`, y la traza nueva (no una vieja). Se ve el span `relevo.turno` (tipo AGENT) y, si el modelo respondió, `relevo.router` y `relevo.extraccion`.
 
-Qué señalar:
+## 6. Plan B
 
-- Un span `relevo.turno` (kind AGENT). En el turno simulado de E1 el status fue OK y el padre fue `POST /api/chat`.
-- Si el modelo respondió, deberían verse también `relevo.router` y, en la orden, `relevo.extraccion`.
-- El atributo de usuario del turno es el del selector (`coordinadora_enfermeria` en el span de E1 era `gerencia`, porque ese turno se hizo con Gerencia).
+| Si pasa esto | Qué se hace |
+|---|---|
+| **Sin red o xAI no responde / falta `XAI_API_KEY`** | El chat no inventa: responde el stream simulado («Soy Relevo. Aún no tengo modelo conectado… configura XAI_API_KEY»). Se muestra esa burbuja, se dice qué pasó y se **pasa a la grabación** de la demo completa guardada en `docs/entrega/`. No se reintenta la misma pregunta esperando otro resultado. |
+| **El auditor está caído** | La tarjeta aparece como **«sin auditar»** y no bloquea nada: está diseñado así. Se explica y se sigue con Aprobar. Para mostrar el veredicto de todos modos, el `curl` de abajo no necesita xAI. |
+| **Error 500 en el modo dev** | Detener `npm run dev`, borrar la caché y reiniciar: `Remove-Item -Recurse -Force .next` y `npm run dev`. El caso conocido de OpenTelemetry en el runtime equivocado se corrigió en el commit `2c5bb71`; si reaparece, es lo primero que se prueba. |
+| **Una respuesta sale distinta de lo esperado** | Se dice lo que llegó y por qué puede pasar (el modelo no es determinista). No se fuerza el discurso. |
+| **El domingo no sale en la tarjeta** | Se dice qué veredicto llegó. La orden de aprobación sigue valiendo. |
+| **La demo completa no se puede hacer** | La lámina 10 (3,08 → 76,92 → 83,08 → 98,46) y la lámina 11 no dependen de la red. |
 
-Cierre, en una frase: «La traza no aprueba nada. La aprobación es la tarjeta, y la fila ya está en la base.»
-
-## Plan B si falla la red
-
-Sin `XAI_API_KEY`, o si xAI no responde, el chat no inventa el turno. Responde el stream simulado. El reporte E1 guardó el texto: «Soy Relevo. Aún no tengo modelo conectado… configura XAI_API_KEY». Enseñen esa burbuja y sigan. No reintenten la misma pregunta esperando otro resultado.
-
-El veredicto no necesita al asistente. Con el auditor del punto 5 del checklist, en PowerShell (el cuerpo es el del reporte D2):
+Veredicto del auditor sin el asistente (PowerShell; el cuerpo es el del reporte D2):
 
 ```powershell
 $body = @'
@@ -139,15 +285,22 @@ $body = @'
 curl.exe -sS -X POST http://127.0.0.1:8641/a2a -H "Content-Type: application/json" --data-binary $body
 ```
 
-El veredicto esperado es `observaciones`, art. 179. Los id de tarea cambian en cada llamada.
+Esperado: tarea `completed` con el artefacto `veredicto_auditoria`, veredicto `observaciones` y el artículo 179. Los id de tarea y de artefacto cambian en cada llamada.
 
-Phoenix igual recibe el turno simulado: es lo que E1 ya demostró con el span `relevo.turno`. Si el export falla, el chat sigue; díganlo y muestren la captura del informe (sección 5.6) en vez de una traza vacía.
+## 7. Qué no hacer
 
-La tabla del extractor (3,08 % → 76,92 % → 83,08 %, n = 65, reportes C3 y E2) está en la diapositiva y no depende de la red. Úsenla si la demo de la tarjeta no se pudo completar. No afirmen que esa tabla compara contra Grok: esa columna sigue pendiente.
+- No re-sembrar la base ni usar `docker compose down -v`.
+- No abrir `.env` frente al público.
+- No presentar la búsqueda de la demo como híbrida si el servicio de embeddings estaba apagado.
+- No presentar las 120 filas del simulador como usuarios del curso.
+- No cambiar de perfil a mitad de las interacciones 2 a 4: cambiar el selector abre otra conversación.
+- No forzar un Aprobar sobre una tarjeta `rechazado`: el botón está deshabilitado y no es el camino.
 
-## Qué no hacer en estos ocho minutos
+## 8. Después
 
-- No re-siembren la base.
-- No abran `.env` en el proyector.
-- No pulsen Aprobar sobre una tarjeta `rechazado`: el botón está deshabilitado, y forzarlo no es el camino.
-- No presenten las 120 filas del simulador como usuarios del curso.
+Cuando termine la presentación:
+
+1. Detener los servicios: `Ctrl+C` en las terminales del auditor y la web.
+2. Si se encendió Phoenix: `docker compose stop phoenix`.
+3. Dejar la base lista para la próxima vez con el reseteo del paso 1.4 (borra solo lo creado por la demo).
+4. Apagar la base solo si se necesita la memoria: `docker compose stop db` (nunca `down -v`).
