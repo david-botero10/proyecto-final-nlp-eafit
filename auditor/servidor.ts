@@ -2,20 +2,17 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import type { Socket } from "node:net";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { randomUUID } from "node:crypto";
-import { SemanticConventions } from "@arizeai/openinference-semantic-conventions";
-import { solicitudSchema } from "../lib/a2a/esquemas";
-import { atributosAgente, conSpan } from "../lib/observabilidad/spans";
 import { construirAgentCard } from "./agent-card";
+import {
+  CABECERA_TOKEN,
+  errorCuerpoNoValido,
+  procesarJsonRpc,
+  TOPE_CUERPO,
+  tokenAuditorValido,
+} from "./a2a";
 import { cerrarClientesAuditor } from "./mcp";
-import { redactarRazones } from "./razones";
-import { verificar } from "./verificaciones";
-import { construirVeredicto } from "./veredicto";
 
 const PUERTO_POR_DEFECTO = 8641;
-const TOPE_CUERPO = 1_000_000;
-
-type IdRpc = string | number | null;
 
 function esEntradaPrincipal(): boolean {
   const argv1 = process.argv[1];
@@ -32,14 +29,6 @@ function responder(res: ServerResponse, codigo: number, cuerpo: unknown): void {
     "Content-Length": Buffer.byteLength(json),
   });
   res.end(json);
-}
-
-function errorRpc(id: IdRpc, codigo: number, mensaje: string) {
-  return {
-    jsonrpc: "2.0" as const,
-    id,
-    error: { code: codigo, message: mensaje },
-  };
 }
 
 function leerCuerpo(req: IncomingMessage): Promise<string> {
@@ -61,34 +50,6 @@ function leerCuerpo(req: IncomingMessage): Promise<string> {
   });
 }
 
-function idRpc(valor: unknown): IdRpc | undefined {
-  if (valor === null || typeof valor === "string" || typeof valor === "number") {
-    return valor;
-  }
-  return undefined;
-}
-
-function mensajeRegistro(error: unknown): string {
-  if (!(error instanceof Error)) {
-    return "error desconocido";
-  }
-  if (/password|postgresql:\/\//i.test(error.message)) {
-    return "error de base de datos";
-  }
-  return error.message;
-}
-
-async function auditarCuerpo(datos: unknown) {
-  const solicitud = solicitudSchema.parse(datos);
-  const hallazgos = await verificar(solicitud);
-  const veredicto = construirVeredicto(solicitud.propuesta_id, hallazgos);
-  veredicto.razones = await redactarRazones(
-    veredicto.razones,
-    veredicto.veredicto,
-  );
-  return veredicto;
-}
-
 function basePublica(req: IncomingMessage, puerto: number): string {
   const host = req.headers.host;
   if (
@@ -100,6 +61,11 @@ function basePublica(req: IncomingMessage, puerto: number): string {
   return `http://127.0.0.1:${puerto}`;
 }
 
+function tokenDe(req: IncomingMessage): string | undefined {
+  const valor = req.headers[CABECERA_TOKEN];
+  return Array.isArray(valor) ? valor[0] : valor;
+}
+
 async function manejarA2a(
   req: IncomingMessage,
   res: ServerResponse,
@@ -108,125 +74,10 @@ async function manejarA2a(
   try {
     texto = await leerCuerpo(req);
   } catch {
-    responder(
-      res,
-      200,
-      errorRpc(null, -32600, "La petición JSON-RPC no es válida."),
-    );
+    responder(res, 200, errorCuerpoNoValido());
     return;
   }
-
-  let cuerpo: unknown;
-  try {
-    cuerpo = JSON.parse(texto) as unknown;
-  } catch {
-    responder(res, 200, errorRpc(null, -32700, "El cuerpo no es JSON válido."));
-    return;
-  }
-
-  if (Array.isArray(cuerpo) || !cuerpo || typeof cuerpo !== "object") {
-    responder(
-      res,
-      200,
-      errorRpc(null, -32600, "La petición JSON-RPC no es válida."),
-    );
-    return;
-  }
-
-  const peticion = cuerpo as Record<string, unknown>;
-  const id = idRpc(peticion.id);
-  if (
-    peticion.jsonrpc !== "2.0" ||
-    typeof peticion.method !== "string" ||
-    id === undefined
-  ) {
-    responder(
-      res,
-      200,
-      errorRpc(id ?? null, -32600, "La petición JSON-RPC no es válida."),
-    );
-    return;
-  }
-
-  if (peticion.method === "tasks/get") {
-    responder(
-      res,
-      200,
-      errorRpc(id, -32001, "La tarea no está persistida."),
-    );
-    return;
-  }
-
-  if (peticion.method !== "message/send") {
-    responder(res, 200, errorRpc(id, -32601, "Método no encontrado."));
-    return;
-  }
-
-  const params = peticion.params;
-  const message =
-    params && typeof params === "object"
-      ? (params as { message?: { parts?: unknown[] } }).message
-      : undefined;
-  const partes = message?.parts;
-  const primera = Array.isArray(partes) ? partes[0] : undefined;
-  const datos =
-    primera &&
-    typeof primera === "object" &&
-    (primera as { kind?: unknown }).kind === "data"
-      ? (primera as { data?: unknown }).data
-      : undefined;
-  if (datos === undefined) {
-    responder(res, 200, errorRpc(id, -32602, "Parámetros inválidos."));
-    return;
-  }
-
-  const parsed = solicitudSchema.safeParse(datos);
-  if (!parsed.success) {
-    const detalle = parsed.error.issues[0]?.message ?? "revisa la solicitud";
-    responder(
-      res,
-      200,
-      errorRpc(id, -32602, `Parámetros inválidos. ${detalle}`),
-    );
-    return;
-  }
-
-  try {
-    const veredicto = await conSpan(
-      "auditor.verificar",
-      atributosAgente(parsed.data.propuesta_id),
-      async (span) => {
-        const obtenido = await auditarCuerpo(parsed.data);
-        span.setAttribute("veredicto", obtenido.veredicto);
-        span.setAttribute(SemanticConventions.OUTPUT_VALUE, obtenido.veredicto);
-        return obtenido;
-      },
-    );
-    responder(res, 200, {
-      jsonrpc: "2.0",
-      id,
-      result: {
-        id: randomUUID(),
-        contextId: veredicto.propuesta_id,
-        kind: "task",
-        status: { state: "completed" },
-        artifacts: [
-          {
-            artifactId: randomUUID(),
-            name: "veredicto_auditoria",
-            parts: [{ kind: "data", data: veredicto }],
-          },
-        ],
-      },
-    });
-  } catch (error) {
-    console.error(`Auditor: ${mensajeRegistro(error)}`);
-    responder(
-      res,
-      200,
-      errorRpc(id, -32603, "No se pudo completar la auditoría."),
-    );
-  }
+  responder(res, 200, await procesarJsonRpc(texto));
 }
 
 export type AuditorEnMarcha = {
@@ -244,11 +95,17 @@ export function iniciarAuditor(opciones?: {
   const sockets = new Set<Socket>();
   const server = createServer((req, res) => {
     const url = req.url?.split("?")[0] ?? "/";
-    if (req.method === "GET" && url === "/.well-known/agent.json") {
+    const esCard = req.method === "GET" && url === "/.well-known/agent.json";
+    const esA2a = url === "/a2a" && req.method === "POST";
+    if ((esCard || esA2a) && !tokenAuditorValido(tokenDe(req))) {
+      responder(res, 401, { error: "Token del auditor ausente o inválido." });
+      return;
+    }
+    if (esCard) {
       responder(res, 200, construirAgentCard(basePublica(req, puertoPublico)));
       return;
     }
-    if (url === "/a2a" && req.method === "POST") {
+    if (esA2a) {
       void manejarA2a(req, res);
       return;
     }

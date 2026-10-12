@@ -1,7 +1,13 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { crearCliente, type ClienteSql, type Sql } from "../lib/db/cliente";
+import {
+  crearCliente,
+  DSN_LOCAL,
+  esServerless,
+  type ClienteSql,
+  type Sql,
+} from "../lib/db/cliente";
 import { crearServidor } from "../mcp/servidor";
 import { horasEntre } from "./horas";
 
@@ -18,9 +24,37 @@ type ClienteAuditor = {
 const clientes = new Map<string, Promise<ClienteAuditor>>();
 let pool: ClienteSql | null = null;
 
+/**
+ * Cada verificación reserva su propia conexión y hay 4 + 1 (horas), así que
+ * en la nube el pool necesita más de 1 conexión (DB_POOL_MAX por defecto).
+ */
+const MAX_POOL_AUDITOR_SERVERLESS = 6;
+
+/** DSN del auditor: AUDITOR_DATABASE_URL (rol de solo lectura) o DATABASE_URL. */
+function dsnAuditor(): string {
+  return (
+    process.env.AUDITOR_DATABASE_URL?.trim() ||
+    process.env.DATABASE_URL ||
+    DSN_LOCAL
+  );
+}
+
+/**
+ * Detrás del pooler en modo transacción (Neon) un SET ROLE de sesión no es
+ * fiable: cada transacción puede caer en otro backend. Ahí el aislamiento de
+ * solo lectura lo da el usuario de AUDITOR_DATABASE_URL, no SET ROLE.
+ */
+function usaRolDeSesion(): boolean {
+  return !esServerless(dsnAuditor());
+}
+
 function obtenerPool(): ClienteSql {
   if (!pool) {
-    pool = crearCliente();
+    const dsn = dsnAuditor();
+    pool = crearCliente(
+      dsn,
+      esServerless(dsn) ? { max: MAX_POOL_AUDITOR_SERVERLESS } : {},
+    );
   }
   return pool;
 }
@@ -37,6 +71,9 @@ async function reservar(): Promise<SqlReservada> {
  * Si el rol no puede asumirse, las tools siguen siendo solo SELECT.
  */
 async function adoptarLector(sql: Sql): Promise<void> {
+  if (!usaRolDeSesion()) {
+    return;
+  }
   try {
     await sql`SET ROLE relevo_lector`;
   } catch {
