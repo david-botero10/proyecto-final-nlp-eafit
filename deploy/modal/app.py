@@ -49,7 +49,10 @@ RUTA_ADAPTERS = "/adapters"
 ADAPTER_EXTRACTOR = "extractor-v2"
 VERSION_EXTRACTOR = "v2"
 
-_ML = Path(__file__).resolve().parents[2] / "ml"
+# En local, deploy/modal/app.py -> <repo>/ml. Dentro del contenedor el archivo
+# vive en /root/app.py (sin dos niveles de padres) y ml/ ya está en la imagen.
+_AQUI = Path(__file__).resolve()
+_ML = _AQUI.parents[2] / "ml" if len(_AQUI.parents) > 2 else Path("/root")
 
 # --- Autenticación y constructores (probados sin Modal) --------------------
 
