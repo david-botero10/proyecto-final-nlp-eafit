@@ -39,7 +39,7 @@ web-only deploy would have) scores recall@5 12.5 % / fidelity 0.188 vs hybrid
   Route: delegated direct.
 - [x] T3 Data to Neon (orchestrator): schema + roles + seed + corpus with
   precomputed embeddings copied from the local DB.
-- [ ] T4 Deploy + smoke (orchestrator): Modal deploy, Vercel deploy, env vars,
+- [x] T4 Deploy + smoke (orchestrator): Modal deploy, Vercel deploy, env vars,
   the four demo interactions on the cloud URL.
 - [x] T5 Slide «Arquitectura de despliegue» (HTML deck + editable deck) and
   script section for David.
@@ -57,6 +57,10 @@ web-only deploy would have) scores recall@5 12.5 % / fidelity 0.188 vs hybrid
 
 - T1 merged (9a1bd40) + Modal bearer header (cd66e63); gates: lint exit 0, vitest 125 passed, build exit 0.
 - T3 done on Neon (Postgres 18.6, us-east-2): role `relevo` pre-created NOLOGIN so 0005 applies unchanged; owner granted `relevo_lector`/`relevo_escritor` WITH SET TRUE (PG16+ CREATEROLE does not self-grant SET); data copied with pg_dump --data-only (13 tables, counts identical, 589 embeddings, HNSW+GIN); login role `relevo_auditor` (member of relevo_lector) verified read-only; demo reset applied (120/0/0).
+
+- T4 deployed: Vercel https://relevo-silk.vercel.app (region cle1, next to Neon us-east-2); Modal https://david-botero10--relevo-embeddings.modal.run (CPU, 1 warm container). Fixes during deploy: `.vercelignore` patterns anchored to root (`db/` was excluding `lib/db`); Git Bash path conversion broke `modal volume put` remote path (MSYS_NO_PATHCONV=1); Modal requires a payment method for GPU → `RELEVO_CON_EXTRACTOR=0` (web falls back to Grok); CPU re-ranker took ~26 s for 20 chunks and queued embeddings → re-ranker off by default (`/rerank` 501, RRF = evaluated configuration).
+- Smoke on the cloud URL (2026-10-12 ~13:30): Q1 hybrid art. 168 + 160 in 38.7 s; Q2 3 people scoped to team in 12.1 s; Q3 card with A2A auditor «observaciones» art. 179 in 16.2 s; Q4 approval wrote origen=tarjeta row + pair in 0.3 s. Demo data reset (120/0/0).
+- Pending: GPU extractor on Modal needs the user's decision on registering a card; slide/script must reflect what is deployed.
 
 ## Next step
 Launch T1 and T2 in parallel worktrees; user creates Vercel, Neon and Modal
