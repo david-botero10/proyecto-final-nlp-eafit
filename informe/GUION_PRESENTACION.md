@@ -6,7 +6,7 @@ Este documento es para estudiar y ensayar. Cada lámina trae lo que se dice, la 
 
 ## Supuestos de tiempo
 
-Se asume un turno de **20 minutos**: unos 13 de charla, 5 de demo en vivo y 2 de colchón para transiciones y ajuste. Las preguntas del jurado se asumen aparte; si entran dentro de los 20, se usa la variante comprimida.
+Se asume un turno de **20 minutos**: unos 13 de charla, 5 de demo en vivo y 1,5 de colchón para transiciones y ajuste. Las preguntas del jurado se asumen aparte; si entran dentro de los 20, se usa la variante comprimida.
 
 El reparto de quién habla es una **sugerencia**: está pensado para que cada integrante hable unos 4 minutos y para que quien conduce la demo sea quien más tocó el sistema. Pueden cambiarlo, pero cada uno debe poder responder las preguntas de todas las láminas (ver la checklist del final).
 
@@ -17,18 +17,19 @@ El reparto de quién habla es una **sugerencia**: está pensado para que cada in
 | 3 | La propuesta | 0,75 | Isabel |
 | 4 | Demo en vivo | 5,0 | David conduce, Isabel lee las preguntas |
 | 5 | Cómo funciona | 0,75 | Alejandro |
-| 6 | Arquitectura | 1,25 | Alejandro |
-| 7 | Recuperación con citas | 1,25 | Alejandro |
+| 6 | Arquitectura | 1,0 | Alejandro |
+| 7 | Recuperación con citas | 1,0 | Alejandro |
 | 8 | Lo que medimos | 0,75 | Alejandro |
 | 9 | La innovación | 1,0 | David |
 | 10 | Resultados del extractor | 1,25 | David |
 | 11 | Dónde actuó el DPO | 1,0 | David |
 | 12 | La pregunta de investigación | 1,0 | David |
 | 13 | Gobernanza | 1,0 | Isabel |
-| 14 | Limitaciones | 0,75 | Isabel |
-| 15 | Cierre | 0,5 | Isabel |
+| 14 | Arquitectura de despliegue | 1,0 | David |
+| 15 | Limitaciones | 0,75 | Isabel |
+| 16 | Cierre | 0,5 | Isabel |
 
-Suma: 12,5 minutos de charla, 5 de demo y 2 de transiciones y colchón.
+Suma: 13 minutos de charla, 5 de demo y 1,5 de transiciones y colchón. La lámina 14 (despliegue) se financia con 0,5 minutos tomados de las láminas 6 y 7 y 0,5 del colchón; la demo no se acorta.
 
 ### Variante comprimida de 12 minutos (con demo de 4)
 
@@ -41,9 +42,9 @@ Suma: 12,5 minutos de charla, 5 de demo y 2 de transiciones y colchón.
 | Citas y cifras en un solo bloque (recall@5 100 %, MRR 0,933, 20/20 del auditor) | 7, 8 | 1,25 |
 | Innovación corta | 9 | 0,75 |
 | Extractor y DPO en un solo bloque (3,1 → 76,9 → 83,1 → 98,5; quitar 50 → 90) | 10, 11 | 1,5 |
-| Pregunta de investigación | 12 | 0,75 |
-| Gobernanza en tres frases | 13 | 0,5 |
-| Limitaciones y cierre juntos | 14, 15 | 0,75 |
+| Pregunta de investigación | 12 | 0,5 |
+| Gobernanza y despliegue en tres frases (todo gratuito, tres nubes, Phoenix en local) | 13, 14 | 0,75 |
+| Limitaciones y cierre juntos | 15, 16 | 0,75 |
 
 Total: 12 minutos. Lo que no se dice en la charla queda en la teoría de cada lámina para la ronda de preguntas.
 
@@ -59,7 +60,7 @@ Lo que **no** se puede decir (el jurado lo va a oír como inflado):
 - Que el modelo pequeño alcanza a Grok. Hoy no: 83,08 % frente a 98,46 %.
 - Que el 75,83 % es aceptación de usuarios. Son 120 decisiones simuladas.
 - Que hay usuarios reales. Hay cero sesiones.
-- Que la app está desplegada. Corre en local.
+- Que el despliegue es de producción. Es una demostración en planes gratuitos, con datos sintéticos, un código de acceso compartido y sin autenticación real.
 
 ---
 
@@ -161,7 +162,7 @@ Nada.
 
 ### Qué decir
 
-Se habla poco; se narra mientras el sistema trabaja. Texto base:
+La demo corre sobre la URL pública del despliegue (con el código de acceso), con el sistema local como plan B (ver «Si algo falla»). Se habla poco; se narra mientras el sistema trabaja. Texto base:
 
 «Cuatro conversaciones, un coordinador.
 
@@ -185,12 +186,13 @@ Cuarta, aprobamos. Solo ahora se escribe, con origen “tarjeta”, y la decisi�
 ### Preguntas probables del jurado
 
 1. **¿Por qué tardó tanto la primera pregunta (unos 25 s)?** Porque el modelo hizo cuatro llamadas a `buscar_norma` y cada una es una vuelta al modelo. Es el costo del RAG agéntico: más calidad en la consulta, más latencia. El tope de seis pasos lo acota.
-2. **¿La búsqueda era híbrida en la demo?** Depende de cómo se ensayó. En la corrida de verificación del 12 de octubre, el servicio de embeddings estaba apagado por memoria (quedaban unos 2,5 GB libres de 15,7 GB), la búsqueda cayó a modo léxico y la respuesta fue correcta de todos modos. Las cifras de recuperación (100 % en top 5) son del modo híbrido, medido aparte. Hay que decirlo con esas palabras si lo preguntan; no se presenta la demo léxica como la híbrida.
+2. **¿La búsqueda era híbrida en la demo?** Depende de cómo se ensayó. En la corrida de verificación del 12 de octubre, el servicio de embeddings estaba apagado por memoria (quedaban unos 2,5 GB libres de 15,7 GB), la búsqueda cayó a modo léxico y la respuesta fue correcta de todos modos. Las cifras de recuperación (100 % en top 5) son del modo híbrido, medido aparte. Hay que decirlo con esas palabras si lo preguntan; no se presenta la demo léxica como la híbrida. En la nube, el servicio de embeddings de Modal se mantiene tibio y la búsqueda debería ser híbrida; se verifica en el chip de la respuesta antes de afirmarlo.
 3. **¿Qué pasa si el usuario se equivoca de equipo?** Una coordinadora de enfermería no puede proponer un cambio para otro equipo: el backend rechaza la propuesta. Gerencia no se recorta.
 4. **Al aprobar, ¿qué par de preferencia se crea?** En una aprobación limpia, el par tiene `elegida` = la extracción y `rechazada` = nulo (origen `aprobacion`). Eso no es un par DPO; solo las correcciones y rechazos, que tienen `rechazada`, lo son. La diapositiva dice «nace un par»; la precisión es esa.
 
 ### Si algo falla
 
+- Plan B general: si la URL pública no responde o falla una interacción, pasar al sistema local (runbook en `informe/GUION_DEMO.md`) y decirlo con calma: es la misma aplicación. Dejar el local levantado y ensayado antes de entrar.
 - Sin red o sin clave de xAI: el chat responde el stream simulado («configura XAI_API_KEY»). Pasar al video grabado de la demo (`docs/entrega/`) y explicar que es una grabación.
 - Auditor caído: la tarjeta sale «sin auditar» y no bloquea. Es un comportamiento de diseño; se explica así.
 - Error 500 en modo dev: borrar `.next` y reiniciar. Ver el runbook.
@@ -530,7 +532,50 @@ Si Phoenix no está encendido, se muestra la captura del informe (sección 5.6) 
 
 ---
 
-## Lámina 14 — Limitaciones y próximos pasos
+## Lámina 14 — Arquitectura de despliegue
+
+**Tiempo:** 1 min. **Quién (sugerido):** David.
+
+### Qué decir
+
+«Una pregunta natural es dónde corre todo esto. La demo de hoy corre en la nube, en tres proveedores con planes gratuitos y con la misma arquitectura que en local.
+
+El navegador entra por una URL pública protegida con un código de acceso, para que nadie pueda gastar nuestra clave de xAI. En Vercel vive la aplicación: el chat, el servidor MCP y el auditor A2A, que son rutas de la misma app; el asistente sigue llamando al auditor por HTTPS, así que el protocolo viaja de verdad por internet. La base está en Neon: PostgreSQL con pgvector y los 589 fragmentos con sus vectores ya calculados.
+
+Los modelos viven aparte, en Modal: los embeddings, siempre tibios en CPU, y nuestro extractor en una GPU que escala a cero; si está frío, el sistema cae a Grok. Phoenix queda en local: en la nube no exportamos trazas. Y si algo falla hoy, tenemos el mismo sistema corriendo en local como plan B.»
+
+### Teoría que hay que dominar
+
+Los límites y precios de cada plan cambian; las cifras de abajo son las que se configuraron el 12 de octubre de 2026. Antes de ensayar, confirmen cada una en el panel del proveedor y no digan una cifra que no hayan visto allí.
+
+- **Funciones serverless.** Cada petición se atiende en un contenedor efímero y sin estado que el proveedor crea y destruye a su ritmo; no pagamos ni administramos un servidor encendido. Límites que hay que conocer: (1) **duración máxima** por invocación (en Vercel Hobby, hasta 300 s con nuestra configuración; un turno de RAG agéntico tarda unos 25 s, así que cabe con holgura); (2) **memoria** acotada (2 GB en Hobby) y tamaño máximo del paquete (cientos de MB), lo que descarta cargar un modelo de embeddings de más de 2 GB; (3) **sin disco persistente ni procesos en segundo plano**: lo que importa se guarda en la base; (4) **arranque en frío**: la primera petición tras un rato inactivo debe cargar el código y puede tardar algo más. Por eso el estado vive en Neon y no en la memoria de la función, y la respuesta del chat va en *streaming*.
+- **Escala a cero y arranques en frío (Neon y Modal).** «Escala a cero» significa que, sin tráfico, el proveedor apaga el recurso y deja de cobrar (o de gastar créditos); a cambio, la primera petición paga el arranque. **Neon** suspende el cómputo tras 5 minutos sin uso y la primera consulta tarda unos segundos; mitigación: una consulta de calentamiento (`SELECT 1`) justo antes de empezar y no dejar pasar 5 minutos sin actividad durante la presentación. **Modal** tiene dos políticas: los embeddings (bge-m3 en CPU) se mantienen con un contenedor mínimo encendido (`min_containers`; en versiones anteriores `keep_warm`), porque la web solo espera 3 s antes de caer a búsqueda léxica; el extractor corre en GPU y escala a cero, porque mantener una GPU encendida gasta los créditos muy rápido. Si está frío, la web usa Grok como extractor (el mismo respaldo que ya existía). Dos respaldos distintos, uno por servicio: **léxico** si los embeddings no responden a tiempo, **Grok** si el extractor está frío.
+- **Pool de conexiones y por qué el modo transacción prohíbe lo que prohíbe.** Las funciones serverless abren muchas conexiones cortas y PostgreSQL tiene pocas conexiones simultáneas (cada una es un proceso), así que Neon ofrece un **pooler** (PgBouncer) delante. En modo transacción, una conexión real del servidor se presta al cliente **solo mientras dura una transacción**, y la siguiente transacción del mismo cliente puede caer en otra conexión. Consecuencias: (1) las **sentencias preparadas con nombre** viven en una conexión concreta; si la siguiente transacción cae en otra, falla con «prepared statement does not exist». Por eso el cliente `postgres-js` lleva `prepare: false` (algunas versiones recientes del pooler admiten sentencias preparadas de protocolo, pero no dependemos de ello). (2) Un **`SET ROLE` de sesión** quedaría pegado a la conexión del servidor y la heredaría otro cliente: sería una fuga de privilegios (alguien con el rol de escritura sin merecerlo) o se perdería, según la suerte. Por eso la escritura usa `SET LOCAL ROLE relevo_escritor` **dentro de la transacción de ejecución**: `SET LOCAL` dura solo hasta el `COMMIT`/`ROLLBACK` y no se filtra. Es el mismo diseño de la lámina 13, y ahora además es seguro frente al pooler. Otras cosas de sesión que no se pueden usar con pooler transaccional: `LISTEN/NOTIFY`, bloqueos asesores de sesión y tablas temporales.
+- **Por qué los modelos viven aparte de la web.** Una función serverless tiene memoria y paquete acotados, no tiene GPU y se apaga sola; un modelo necesita cargar sus pesos (bge-m3 pesa del orden de 2 GB; Qwen3.5-0.8B con su adaptador necesita GPU para responder en tiempos razonables) y se amortiza si se queda cargado. Modal da exactamente eso: contenedores con GPU o CPU, facturación **por segundo** y un Volume donde viven los pesos y el adaptador LoRA/DPO v2. La separación también es un buen diseño: se escala y se cobra cada parte por separado, y la web puede degradarse con gracia (léxico, Grok) si el servicio de modelos falla.
+- **Gestión de secretos.** Cada plataforma guarda sus variables de entorno cifradas y fuera del repositorio: Vercel (`XAI_API_KEY`, la URL de Neon, `ACCESS_CODE`, los tokens), Modal (sus *Secrets*), y en local `.env`, que está ignorado por git (`.env.example` solo documenta los nombres). Nunca van en el código, en los logs, en las diapositivas ni en el chat. Después de la presentación se **rotan** las claves y el código de acceso, porque se usaron en una sesión pública.
+- **Código de acceso y tokens entre servicios.** Son dos capas distintas. El **código de acceso** (`ACCESS_CODE`) protege la interfaz: sin él, una URL pública permitiría a cualquiera consumir el saldo de xAI. Los **tokens de servicio** (portador o *bearer*) protegen las llamadas máquina a máquina: Vercel → Modal, y asistente → auditor. Un token compartido es suficiente para un prototipo; no sustituye a una autenticación de usuarios real (la API sigue sin login, como se dijo en la lámina 13).
+- **A2A sobre internet pública.** El protocolo no cambia por salir de localhost: el auditor publica su **Agent Card** en `/.well-known/agent.json` (nombre, descripción, URL y capacidades: es cómo otro agente lo descubre) y recibe `message/send` por JSON-RPC sobre HTTPS en `/a2a`. Lo que sí cambia es la exposición: hay que cifrar (HTTPS, lo da Vercel), autenticar la llamada (token compartido) y asumir que la tarjeta es metadato descubrible. Confirmen con el equipo cómo quedó configurada la protección del Agent Card y del endpoint antes del ensayo.
+- **Modelo de costo.** Hoy el costo directo es casi nulo: Vercel Hobby y Neon Free son gratuitos; Modal Starter trae unos US$30 mensuales de créditos y cobra por segundo de cómputo usado; xAI cobra por token y es el único gasto que depende del uso (el código de acceso lo protege). Lo que más gasta de Modal es **mantener algo encendido**: un contenedor tibio consume créditos 24 horas al día, así que se enciende para la presentación y se baja después. No medimos el costo por orden (está en «lo que no se hizo» de la lámina 15).
+- **Qué cambiaría en producción.** Planes de pago (Vercel Pro para más duración y equipo; Neon con cómputo que no se suspende o con suspensión controlada; Modal con GPU reservada si hay tráfico constante); **Phoenix gestionado** (o un colector OTel) para tener las trazas también en la nube; **autenticación real** con usuarios y roles en lugar del código compartido; **región** elegida por latencia (para Colombia, São Paulo si el plan la ofrece, frente a Washington D.C. por defecto); copias de seguridad y monitoreo de la base; y una revisión de protección de datos personales (Ley 1581 de 2012, incluida la transferencia internacional) antes de cargar nómina real.
+
+### Preguntas probables del jurado
+
+1. **¿Cuánto cuesta?** Hoy, nada de bolsillo: todo corre en planes gratuitos. Modal gasta créditos mensuales (unos US$30) y xAI cobra por token, que es el único gasto real y está protegido por el código de acceso. En producción el costo vendría sobre todo de la GPU y de la base sin suspensión; no tenemos una medición de costo por orden y no la inventamos.
+2. **¿Qué pasa si Modal está frío?** Depende del servicio. Los embeddings se mantienen tibios; si aun así tardan más de 3 s, la búsqueda cae a léxico y responde, con la calidad medida del modo léxico (recall@5 12,5 %, fidelidad 0,188 frente a 100 % y 0,926 del híbrido, según `evaluacion/citas_lexica.md`). El extractor escala a cero: si está frío, la web usa Grok. En ambos casos el usuario recibe respuesta; lo que cambia es la calidad o la latencia, y se dice de frente.
+3. **¿Es seguro tener la URL pública?** Es razonable para una demostración, no para producción. Hay un código de acceso delante de toda la app, HTTPS, tokens entre servicios, secretos fuera del repositorio y un modelo que no puede escribir (lámina 13). Faltan autenticación por usuario, límites de uso por cliente más finos y un red-team formal. Los datos son sintéticos, así que la exposición de datos personales es nula.
+4. **¿Por qué tres proveedores y no uno?** Porque cada pieza tiene un requisito distinto: Vercel es lo más natural para Next.js y sus funciones; Neon da PostgreSQL con pgvector gestionado, algo que una función serverless no puede ser; Modal da GPU y memoria por segundo, que Vercel no ofrece. Con uno solo habría que renunciar a algo: una VM única sería más simple pero sin escala a cero y con costo fijo. A cambio, hay más secretos y más puntos de falla, y por eso cada uno tiene un respaldo. Y gracias a que cada servicio se conecta por variables de entorno (`DATABASE_URL`, `EMBED_SERVICE_URL`, `AUDITOR_URL`, `EXTRACTOR_URL`), moverlo es configuración, no reescritura.
+5. **¿Por qué no Hugging Face Spaces?** Era el plan para los modelos, pero en 2026 las condiciones de la CPU gratuita se restringieron para cuentas nuevas (lo reportan usuarios en los foros; no hay anuncio oficial), y ZeroGPU exige Gradio y cuentas antiguas. Modal da GPU por segundo con créditos mensuales y permite servir nuestros dos modelos con los mismos contratos HTTP. No digan que lo intentaron en Spaces: no se intentó.
+6. **¿Por qué desplegar los modelos y no solo la web?** Porque sin ellos la recuperación sería solo léxica: recall@5 12,5 % y fidelidad 0,188 frente a 100 % y 0,926 del híbrido (control medido en `evaluacion/citas_lexica.md`). Una web sola mostraría una versión recortada del sistema.
+7. **¿Los datos salen de Colombia?** Sí, y hay que decirlo sin rodeos: las regiones por defecto de Vercel, Neon y Modal están en Estados Unidos, y las preguntas viajan también a la API de xAI. Es aceptable aquí porque **todos los datos son sintéticos**. Con nómina real habría que elegir región (São Paulo es la más cercana), revisar la Ley 1581 de 2012 sobre transferencia internacional de datos personales y, probablemente, no enviar datos personales al proveedor del modelo. No evaluamos ese cumplimiento.
+8. **¿Y Phoenix, por qué no está en la nube?** No lo desplegamos: es un servicio con almacenamiento propio que no entra en estos tres planes y no era prioritario para la demo; en la nube la exportación OTel está apagada. Las trazas siguen disponibles en local. En producción usaríamos Phoenix gestionado o un colector.
+
+### Si algo falla
+
+No se improvisa: se pasa al sistema local, que es la misma aplicación. Con calma y sin disculparse: «La nube no respondió en este momento; es el mismo sistema, lo corro en mi máquina». El procedimiento paso a paso (base con `docker compose up -d db`, servicios de modelos, aplicación) está en `informe/GUION_DEMO.md`; ensáyenlo antes de entrar. Si solo falla un servicio de modelos, no hay que cambiar nada: el sistema cae solo a léxico o a Grok, y se dice qué pasó. Si Neon tarda en la primera consulta, es el arranque en frío: se espera unos segundos y se explica. Si la nube no llegó a pasar las cuatro interacciones antes de la presentación, la lámina se ajusta a lo que sí quedó desplegado y la demo se hace en local.
+
+---
+
+## Lámina 15 — Limitaciones y próximos pasos
 
 **Tiempo:** 0,75 min. **Quién (sugerido):** Isabel.
 
@@ -540,12 +585,12 @@ Si Phoenix no está encendido, se muestra la captura del informe (sección 5.6) 
 
 Segundo, las fechas absolutas: “el 12 de octubre” sigue fallando en el extractor propio y es la brecha principal con el modelo de frontera.
 
-Tercero, la latencia local: unos 11 segundos por extracción en Windows sin kernels optimizados. Y cuarto, el despliegue: hoy corre en local con Docker; el siguiente paso es la nube con la base y Phoenix gestionados.»
+Tercero, la latencia local: unos 11 segundos por extracción en Windows sin kernels optimizados. Y cuarto, la observabilidad en la nube: Phoenix sigue en local y en la nube las trazas no se exportan.»
 
 ### Teoría que hay que dominar
 
 - **Sesgos de la evaluación.** Simulador y test salen del mismo generador; el juez de citas es de la misma familia que el asistente; Grok se corrió una vez; n pequeños (65 y 20); el auditor se evaluó con casos que diseñamos nosotros.
-- **Lo que no se hizo:** pruebas con usuarios (0 sesiones), despliegue, voz, cartillas del Ministerio, prueba pareada entre versiones, control SFT, curva de aprendizaje frente al número de pares, medición de costo por orden, red-team.
+- **Lo que no se hizo:** pruebas con usuarios (0 sesiones), autenticación real y Phoenix en la nube (el despliegue es de demostración), voz, cartillas del Ministerio, prueba pareada entre versiones, control SFT, curva de aprendizaje frente al número de pares, medición de costo por orden, red-team.
 - **Latencia.** 69,087 s en frío y 11,098 s en caliente para una extracción del modelo local (reporte E2); en la demo, la extracción la hace Grok. El kernel faltante en Windows (Gated DeltaNet sin `causal_conv1d` ni `flash-linear-attention`) explica parte; no está medido cuánto bajaría en Linux con GPU.
 - **Hallazgo de ingeniería a mencionar si preguntan por errores:** el reindexado del 21 de septiembre (commit `a21a6d6`): las leyes de Función Pública vienen en UTF-8 con BOM y BeautifulSoup las leía como cp1252, dejando 0 artículos; corregido, el corpus pasó de 497 chunks / 18 documentos (B2) a 589 / 20 (vigente).
 
@@ -553,12 +598,7 @@ Tercero, la latencia local: unos 11 segundos por extracción en Windows sin kern
 
 1. **¿Por qué no hicieron las pruebas con usuarios?** El tiempo de entrega; el protocolo (guion de 15 minutos, cuestionario Likert, plantilla CSV) está en `evaluacion/PROTOCOLO_USUARIOS.md`. Es el primer paso pendiente.
 2. **¿Cuál sería su prioridad si tuvieran dos semanas?** Sesiones con 5–10 coordinadores reales para obtener pares humanos, un normalizador determinista de fechas, y una prueba pareada para v1 frente a v2.
-3. **¿Está desplegada?** No. Corre en local con Docker; no afirmamos otra cosa.
-4. **¿Por qué no la desplegaron en Vercel, Hugging Face Spaces o Modal, si lo dijeron en la propuesta?** Respuesta base (30 s): «Fue una decisión de prioridades. Invertimos el tiempo en lo que el curso evalúa con más peso: calidad técnica y una evaluación rigurosa. El chat sí cabe en Vercel, pero los modelos propios (bge-m3 y el extractor) necesitan 2–3 GB y en los planes gratuitos no hay dónde correrlos sin pagar; desplegar solo lo que cabe era mostrar una versión recortada. La arquitectura ya está lista: cada servicio se conecta por variables de entorno (`DATABASE_URL`, `EMBED_SERVICE_URL`, `AUDITOR_URL`, `EXTRACTOR_URL`), así que desplegar es configuración, no reescritura.» Si insisten en que lo prometieron: «Es cierto, lo propusimos y no lo cumplimos; está en las limitaciones del informe.»
-   - **Vercel:** el chat y el servidor MCP caben; antes de publicar hacía falta control de acceso, porque una URL pública expone la clave de xAI a que cualquiera consuma el saldo.
-   - **Hugging Face Spaces:** era el plan para los modelos, pero en 2026 cambiaron las condiciones de la CPU gratuita para cuentas nuevas (lo reportan usuarios del foro; no hay anuncio oficial). No digan que lo intentaron: no se intentó.
-   - **Modal:** reconózcanlo: sí habría servido. Da créditos mensuales gratuitos y cobra por segundo de GPU; es la plataforma que elegiríamos para los modelos. No la usamos porque requería migrar los servicios a su formato y priorizamos la evaluación.
-   - **No digan:** «no sabíamos cómo» ni «no se podía gratis» (Modal lo desmiente).
+3. **¿Está desplegada?** Sí, como demostración: Vercel, Neon y Modal en planes gratuitos, con datos sintéticos (lámina 14). Lo que no: autenticación real, Phoenix en la nube y una medición de costo por orden. No es un despliegue de producción y no lo presentamos como tal.
 
 ### Si algo falla
 
@@ -566,7 +606,7 @@ Nada.
 
 ---
 
-## Lámina 15 — Cierre
+## Lámina 16 — Cierre
 
 **Tiempo:** 0,5 min. **Quién (sugerido):** Isabel.
 
@@ -598,11 +638,11 @@ Nada.
 |---|---|---|---|
 | Originalidad e innovación (15 %) | 9, 10, 11, 12 | Interacción 4: la aprobación produce el par | `informe/INFORME_FINAL.md` §7, `ml/dpo/` |
 | Calidad técnica: NLP, LLMs, RAG, embeddings (25 %) | 4, 5, 6, 7, 10, 11 | Interacción 1 (RAG agéntico con 4 búsquedas); interacción 3 (extracción de «próximo domingo») | `mcp/consultas.ts`, `lib/agente/`, `ml/extractor/`, `ml/dpo/` |
-| Uso adecuado de tecnologías (15 %) | 6, 13 | Interacción 2 (herramientas MCP); interacción 3 (auditor A2A); Phoenix si hay RAM | MCP, A2A (`auditor/`), pgvector, bge-m3, Hugging Face (peft, trl), Phoenix |
+| Uso adecuado de tecnologías (15 %) | 6, 13, 14 | Interacción 2 (herramientas MCP); interacción 3 (auditor A2A); Phoenix si hay RAM | MCP, A2A (`auditor/`), pgvector, bge-m3, Hugging Face (peft, trl), Phoenix, Vercel, Neon, Modal |
 | Funcionalidad de la aplicación (20 %) | 3, 4, 5, 13 | Las cuatro interacciones; el chip de intención, el panel Fuentes, la tarjeta, el veredicto | `app/`, `components/`, `lib/agente/flujo-escritura.ts` |
-| Evaluación y validación (10 %) | 7, 8, 10, 11, 14 | Menciones de IC y de n en la charla | `evaluacion/`, `informe/INFORME_FINAL.md` §8 |
+| Evaluación y validación (10 %) | 7, 8, 10, 11, 15 | Menciones de IC y de n en la charla | `evaluacion/`, `informe/INFORME_FINAL.md` §8 |
 | Presentación final (10 %) | todas | Demo guiada, plan B ensayado | Este guion y `informe/GUION_DEMO.md` |
-| Informe escrito (5 %) | 15 | Remitir al repositorio | `informe/INFORME_FINAL.md` |
+| Informe escrito (5 %) | 16 | Remitir al repositorio | `informe/INFORME_FINAL.md` |
 
 Objetivos de la guía que se evidencian además: tool use autónomo y memoria (lámina 4, interacciones 1–2 y cambio de perfil), datos estructurados y no estructurados (interacciones 1 y 2), aprendizaje continuo (láminas 9 a 11), comunicación entre agentes MCP/A2A (lámina 6), componente prospectivo (lámina 12).
 
@@ -632,6 +672,10 @@ Objetivos de la guía que se evidencian además: tool use autónomo y memoria (l
 - **DPO:** optimización directa con pares preferido/rechazado y un modelo de referencia, sin modelo de recompensa.
 - **MCP:** protocolo abierto entre un cliente de modelo y servidores de herramientas.
 - **A2A:** protocolo abierto entre agentes: Agent Card, `message/send`, tareas y artefactos.
+- **Serverless:** funciones que el proveedor crea y destruye por petición, sin servidor administrado y con límites de duración y memoria.
+- **Arranque en frío:** retraso de la primera petición cuando el recurso estaba apagado o inactivo.
+- **Escala a cero:** apagar el recurso sin tráfico para no pagar; la primera petición paga el arranque.
+- **Pooler de conexiones:** intermediario (PgBouncer) que reparte pocas conexiones reales entre muchos clientes; en modo transacción presta la conexión solo durante una transacción.
 - **Bootstrap (IC 95 %):** remuestreo con reemplazo para estimar la incertidumbre de una métrica.
 
 ## Checklist del ensayo
@@ -659,9 +703,10 @@ Cada integrante debe poder explicar **sin notas**, con un ejemplo de Relevo y si
 - recall@k y MRR con la fórmula; sesgo del juez; el 12,5 % léxico y por qué no está versionado.
 - El auditor: reglas, veredictos, 20/20 y su límite.
 
-**David (demo, extractor, DPO, pregunta)**
+**David (demo, despliegue, extractor, DPO, pregunta)**
 
 - La demo completa, con los tiempos y el plan B.
+- El despliegue: funciones serverless y sus límites, escala a cero y arranques en frío con sus mitigaciones, pooler en modo transacción (sin sentencias preparadas ni `SET ROLE` de sesión), por qué los modelos van aparte, secretos, código de acceso y tokens, A2A por internet, costo y qué cambiaría en producción.
 - LoRA con la fórmula y `r`, `α`; QLoRA (NF4, doble cuantización, AdamW 8 bits); dataset y ausencia de fuga de plantilla.
 - Exactitud total, F1 de fechas, bootstrap, IC que se solapan frente a los que no, por qué importa n = 65.
 - DPO con la pérdida, β, referencia congelada, contraste con RLHF/PPO; por qué los 29 pares y por qué falta el control SFT.
