@@ -37,3 +37,5 @@ para anotar cada sesión es `sesiones/plantilla.csv`.
 
 Los JSON de las corridas quedan en `evaluacion/resultados/` y se versionan:
 son chicos y no llevan secretos.
+
+**Control léxico de la métrica 2** (`citas_lexica.md`, `resultados/citas_lexica.json`): con el servicio de embeddings apagado, las mismas 20 preguntas dan recall@5 12,50 %, MRR 0,150 y fidelidad del juez 0,188, frente a 100 %, 0,933 y 0,926 en modo híbrido. Las preguntas coloquiales no comparten vocabulario con la ley; sin la parte semántica, la recuperación falla y las respuestas citan fragmentos que no las respaldan.

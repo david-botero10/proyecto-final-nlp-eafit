@@ -1,0 +1,228 @@
+{
+  "n": 20,
+  "modos": {
+    "hibrida": 0,
+    "lexica": 20
+  },
+  "macro": {
+    "recall_at_3": 0.125,
+    "recall_at_5": 0.125,
+    "recall_at_8": 0.125,
+    "mrr": 0.15
+  },
+  "juez_pendiente": false,
+  "fidelidad_macro": 0.1875,
+  "filas": [
+    {
+      "id": "c01",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c02",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c03",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c04",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c05",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c06",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c07",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c08",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c09",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c10",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c11",
+      "modo": "lexica",
+      "refs": [
+        "art. 190"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": 1
+    },
+    {
+      "id": "c12",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c13",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c14",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c15",
+      "modo": "lexica",
+      "refs": [
+        "art. 237"
+      ],
+      "recall_at_3": 1,
+      "recall_at_5": 1,
+      "recall_at_8": 1,
+      "mrr": 1,
+      "fidelidad": 1
+    },
+    {
+      "id": "c16",
+      "modo": "lexica",
+      "refs": [
+        "art. 81",
+        "art. 81"
+      ],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0.75
+    },
+    {
+      "id": "c17",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c18",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    },
+    {
+      "id": "c19",
+      "modo": "lexica",
+      "refs": [
+        "art. 179",
+        "art. 179",
+        "art. 161"
+      ],
+      "recall_at_3": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_8": 0.5,
+      "mrr": 1,
+      "fidelidad": 1
+    },
+    {
+      "id": "c20",
+      "modo": "lexica",
+      "refs": [],
+      "recall_at_3": 0,
+      "recall_at_5": 0,
+      "recall_at_8": 0,
+      "mrr": 0,
+      "fidelidad": 0
+    }
+  ]
+}
