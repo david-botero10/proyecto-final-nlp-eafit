@@ -33,7 +33,7 @@ web-only deploy would have) scores recall@5 12.5 % / fidelity 0.188 vs hybrid
 - [ ] T1 Web/Vercel (delegated writer): auditor route handlers, serverless DB
   client (Neon pooler: `prepare:false`, small pool), access-code middleware,
   Vercel config, env contract. Route: delegated direct (2+ files).
-- [ ] T2 Modal (delegated writer): Modal app serving `/embed`, `/rerank`,
+- [x] T2 Modal (delegated writer): Modal app serving `/embed`, `/rerank`,
   `/salud` (bge-m3) and `/extraer` (Qwen3.5-0.8B + LoRA v2 adapter from a
   Modal Volume), same contracts as `ml/servir.py` and `ml/servir_extractor.py`.
   Route: delegated direct.
@@ -41,7 +41,7 @@ web-only deploy would have) scores recall@5 12.5 % / fidelity 0.188 vs hybrid
   precomputed embeddings copied from the local DB.
 - [ ] T4 Deploy + smoke (orchestrator): Modal deploy, Vercel deploy, env vars,
   the four demo interactions on the cloud URL.
-- [ ] T5 Slide «Arquitectura de despliegue» (HTML deck + editable deck) and
+- [x] T5 Slide «Arquitectura de despliegue» (HTML deck + editable deck) and
   script section for David.
 
 ## Acceptance criteria
@@ -52,6 +52,8 @@ web-only deploy would have) scores recall@5 12.5 % / fidelity 0.188 vs hybrid
 
 ## Progress
 - 2026-10-12: branch `feat/despliegue` from `b12446d`; document created.
+- T2 merged (fc7545c + fix 38899f3: `parents[2]` IndexError when app.py is imported at /root/app.py in the container). 11 local tests pass; image build untested until the user's Modal login. GPU L4; embeddings warm at ~US$3.8/day.
+- T5 merged (78f4d62 + 0c92775): slide 14 «Tres nubes gratuitas, la misma arquitectura» (David), deck now 16 slides; editable deck artifact republished (version 9).
 
 ## Next step
 Launch T1 and T2 in parallel worktrees; user creates Vercel, Neon and Modal
