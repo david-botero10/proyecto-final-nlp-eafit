@@ -16,6 +16,8 @@ import {
 } from "./citas_metricas";
 import { claveXai, juzgarCitas } from "./juez_citas";
 
+const INTENTOS_JUEZ = 3;
+
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DORADO = path.join(RAIZ, "evaluacion", "citas_doradas.jsonl");
 const SALIDA_MD = path.join(RAIZ, "evaluacion", "citas.md");
@@ -105,16 +107,25 @@ export async function evaluarCitas(): Promise<void> {
       const ranking = rankingDeCitas(dorada.refs_esperadas, refs);
       let fidelidad: number | null = null;
       if (claveXai()) {
-        const juicio = await juzgarCitas(
-          dorada.pregunta,
-          salida.resultados.map((fila) => ({
-            ref: fila.ref,
-            fuente: fila.fuente,
-            fragmento: fila.fragmento,
-          })),
-        );
-        fidelidad = juicio ? juicio.fidelidad : null;
+        const chunks = salida.resultados.map((fila) => ({
+          ref: fila.ref,
+          fuente: fila.fuente,
+          fragmento: fila.fragmento,
+        }));
+        // Una llamada colgada o un corte de red no debe tumbar las 20 preguntas:
+        // se reintenta y, si persiste, esa pregunta queda sin juicio.
+        for (let intento = 1; intento <= INTENTOS_JUEZ; intento += 1) {
+          try {
+            const juicio = await juzgarCitas(dorada.pregunta, chunks);
+            fidelidad = juicio ? juicio.fidelidad : null;
+            break;
+          } catch (error) {
+            const motivo = error instanceof Error ? error.message : String(error);
+            console.error(`[${dorada.id}] juez, intento ${intento}/${INTENTOS_JUEZ}: ${motivo}`);
+          }
+        }
       }
+      console.error(`[${dorada.id}] listo (${salida.modo})`);
       filas.push({
         id: dorada.id,
         pregunta: dorada.pregunta,

@@ -10,8 +10,8 @@
     "recall_at_8": 1,
     "mrr": 0.9333333333333333
   },
-  "juez_pendiente": true,
-  "fidelidad_macro": null,
+  "juez_pendiente": false,
+  "fidelidad_macro": 0.9258333333333333,
   "filas": [
     {
       "id": "c01",
@@ -30,7 +30,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c02",
@@ -49,7 +49,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 0.5
     },
     {
       "id": "c03",
@@ -68,7 +68,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 0.6
     },
     {
       "id": "c04",
@@ -87,7 +87,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 0.6666666666666666
     },
     {
       "id": "c05",
@@ -106,7 +106,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c06",
@@ -125,7 +125,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c07",
@@ -144,7 +144,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c08",
@@ -163,7 +163,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c09",
@@ -182,7 +182,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c10",
@@ -201,7 +201,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c11",
@@ -220,7 +220,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c12",
@@ -239,7 +239,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 0.75
     },
     {
       "id": "c13",
@@ -258,7 +258,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c14",
@@ -277,7 +277,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c15",
@@ -296,7 +296,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c16",
@@ -315,7 +315,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 0.3333333333333333,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c17",
@@ -334,7 +334,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c18",
@@ -353,7 +353,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c19",
@@ -372,7 +372,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 1,
-      "fidelidad": null
+      "fidelidad": 1
     },
     {
       "id": "c20",
@@ -391,7 +391,7 @@
       "recall_at_5": 1,
       "recall_at_8": 1,
       "mrr": 0.3333333333333333,
-      "fidelidad": null
+      "fidelidad": 1
     }
   ]
 }
