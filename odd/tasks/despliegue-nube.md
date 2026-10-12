@@ -30,14 +30,14 @@ web-only deploy would have) scores recall@5 12.5 % / fidelity 0.188 vs hybrid
   and ACCESS_CODE live in `.env` / provider dashboards only.
 
 ## Tasks
-- [ ] T1 Web/Vercel (delegated writer): auditor route handlers, serverless DB
+- [x] T1 Web/Vercel (delegated writer): auditor route handlers, serverless DB
   client (Neon pooler: `prepare:false`, small pool), access-code middleware,
   Vercel config, env contract. Route: delegated direct (2+ files).
 - [x] T2 Modal (delegated writer): Modal app serving `/embed`, `/rerank`,
   `/salud` (bge-m3) and `/extraer` (Qwen3.5-0.8B + LoRA v2 adapter from a
   Modal Volume), same contracts as `ml/servir.py` and `ml/servir_extractor.py`.
   Route: delegated direct.
-- [ ] T3 Data to Neon (orchestrator): schema + roles + seed + corpus with
+- [x] T3 Data to Neon (orchestrator): schema + roles + seed + corpus with
   precomputed embeddings copied from the local DB.
 - [ ] T4 Deploy + smoke (orchestrator): Modal deploy, Vercel deploy, env vars,
   the four demo interactions on the cloud URL.
@@ -54,6 +54,9 @@ web-only deploy would have) scores recall@5 12.5 % / fidelity 0.188 vs hybrid
 - 2026-10-12: branch `feat/despliegue` from `b12446d`; document created.
 - T2 merged (fc7545c + fix 38899f3: `parents[2]` IndexError when app.py is imported at /root/app.py in the container). 11 local tests pass; image build untested until the user's Modal login. GPU L4; embeddings warm at ~US$3.8/day.
 - T5 merged (78f4d62 + 0c92775): slide 14 «Tres nubes gratuitas, la misma arquitectura» (David), deck now 16 slides; editable deck artifact republished (version 9).
+
+- T1 merged (9a1bd40) + Modal bearer header (cd66e63); gates: lint exit 0, vitest 125 passed, build exit 0.
+- T3 done on Neon (Postgres 18.6, us-east-2): role `relevo` pre-created NOLOGIN so 0005 applies unchanged; owner granted `relevo_lector`/`relevo_escritor` WITH SET TRUE (PG16+ CREATEROLE does not self-grant SET); data copied with pg_dump --data-only (13 tables, counts identical, 589 embeddings, HNSW+GIN); login role `relevo_auditor` (member of relevo_lector) verified read-only; demo reset applied (120/0/0).
 
 ## Next step
 Launch T1 and T2 in parallel worktrees; user creates Vercel, Neon and Modal
