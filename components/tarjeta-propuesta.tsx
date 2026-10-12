@@ -1,13 +1,27 @@
 "use client";
 
+import {
+  CircleCheck,
+  CircleHelp,
+  CircleX,
+  Hourglass,
+  PencilLine,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldX,
+  TriangleAlert,
+  type LucideIcon,
+} from "lucide-react";
 import { useState } from "react";
 import {
   USUARIO_TARJETA,
   type Accion,
+  type EstadoPropuesta,
   type Propuesta,
   type ResumenEjecucion,
   type Turno,
   type TipoAusencia,
+  type Veredicto,
 } from "@/lib/tipos";
 
 const TURNO_ETIQUETA: Record<Turno, string> = {
@@ -27,6 +41,56 @@ const ACCION_ETIQUETA: Record<Accion["tipo"], string> = {
   asignar_turno: "Asignar turno",
   registrar_ausencia: "Registrar ausencia",
   cancelar_turno: "Cancelar turno",
+};
+
+type Franja = {
+  texto: string;
+  icono: LucideIcon;
+  clases: string;
+};
+
+const FRANJAS: Record<EstadoPropuesta, Franja> = {
+  pendiente: {
+    texto: "Esperando tu aprobación",
+    icono: Hourglass,
+    clases: "bg-amber text-deep",
+  },
+  aprobada: {
+    texto: "Aprobada · escrita en la nómina",
+    icono: CircleCheck,
+    clases: "bg-success text-white",
+  },
+  corregida: {
+    texto: "Corregida · escrita en la nómina",
+    icono: PencilLine,
+    clases: "bg-primary text-white",
+  },
+  rechazada: {
+    texto: "Rechazada",
+    icono: CircleX,
+    clases: "bg-muted text-white",
+  },
+  expirada: {
+    texto: "Expirada",
+    icono: CircleX,
+    clases: "bg-muted text-white",
+  },
+};
+
+const MARCO: Record<EstadoPropuesta, string> = {
+  pendiente: "border-amber bg-amber-tint ring-2 ring-amber/35",
+  aprobada: "border-success/40 bg-surface",
+  corregida: "border-primary/40 bg-surface",
+  rechazada: "border-line bg-surface",
+  expirada: "border-line bg-surface",
+};
+
+type Insignia = { icono: LucideIcon; clases: string };
+
+const INSIGNIA_VEREDICTO: Record<Veredicto, Insignia> = {
+  aprobado: { icono: ShieldCheck, clases: "bg-success-tint text-success" },
+  observaciones: { icono: ShieldAlert, clases: "bg-amber-tint text-amber-ink" },
+  rechazado: { icono: ShieldX, clases: "bg-danger-tint text-danger" },
 };
 
 function nombreDe(propuesta: Propuesta, empleadoId: number): string {
@@ -75,6 +139,23 @@ export function textoResumen(resumen: ResumenEjecucion): string {
   return `${titulo}. ${cuenta(asignaciones, "asignación", "asignaciones")}, ${cuenta(ausencias, "ausencia", "ausencias")} y ${cuenta(cancelaciones, "cancelación", "cancelaciones")}.`;
 }
 
+const CLASE_CAMPO =
+  "rounded-lg border border-line bg-surface px-2 py-1 text-sm text-ink";
+
+const BOTON_BASE =
+  "rounded-boton px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50";
+const BOTON_PRIMARIO = `${BOTON_BASE} bg-primary text-white hover:bg-primary-hover`;
+const BOTON_SECUNDARIO = `${BOTON_BASE} border border-line bg-surface text-ink hover:bg-sand`;
+const BOTON_PELIGRO = `${BOTON_BASE} text-danger hover:bg-danger-tint`;
+
+function Titulo({ children }: { children: string }) {
+  return (
+    <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-subtle">
+      {children}
+    </h3>
+  );
+}
+
 export function TarjetaPropuesta({
   propuesta,
   usuario = USUARIO_TARJETA,
@@ -91,6 +172,12 @@ export function TarjetaPropuesta({
   const decidida = propuesta.estado !== "pendiente" || resumen !== null;
   const auditorRechazo = propuesta.veredicto_auditor?.veredicto === "rechazado";
   const acciones = editando ? borrador : propuesta.acciones;
+  const estadoVisual: EstadoPropuesta = resumen
+    ? resumen.estado
+    : propuesta.estado;
+  const franja = FRANJAS[estadoVisual];
+  const IconoFranja = franja.icono;
+  const veredicto = propuesta.veredicto_auditor;
 
   async function decidir(decision: "aprobar" | "corregir" | "rechazar") {
     if (decision === "corregir") {
@@ -135,327 +222,391 @@ export function TarjetaPropuesta({
   }
 
   return (
-    <article className="mt-3 rounded-xl border border-stone-200 bg-stone-50 p-3">
-      <h2 className="text-sm font-semibold text-stone-900">
-        Tarjeta de aprobación
-      </h2>
+    <article
+      aria-label="Tarjeta de aprobación"
+      className={`mt-4 overflow-hidden rounded-tarjeta border shadow-suave ${MARCO[estadoVisual]}`}
+    >
+      <div
+        className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold ${franja.clases}`}
+      >
+        <IconoFranja size={16} aria-hidden="true" />
+        <span>{franja.texto}</span>
+      </div>
 
-      <section className="mt-3" aria-label="Orden original">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-stone-500">
-          Orden
-        </h3>
-        <p className="mt-1 whitespace-pre-wrap text-sm">{propuesta.orden_texto}</p>
-      </section>
-
-      <section className="mt-3" aria-label="Extracción interpretada">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-stone-500">
-          Interpretación
-        </h3>
-        <p className="mt-1 text-sm">
-          {propuesta.extraccion.empleado}
-          {" · "}
-          {propuesta.extraccion.accion}
-          {propuesta.extraccion.turno
-            ? ` · ${TURNO_ETIQUETA[propuesta.extraccion.turno]}`
-            : ""}
-          {propuesta.extraccion.fechas.length > 0
-            ? ` · ${propuesta.extraccion.fechas.join(", ")}`
-            : ""}
+      <div className="px-4 py-4">
+        <h2 className="text-[15px] font-bold text-ink">
+          Tarjeta de aprobación
+        </h2>
+        <p className="mt-0.5 text-[12.5px] text-muted">
+          Lo que ves aquí es exactamente lo que se escribirá al aprobar.
         </p>
-        <p className="mt-1 text-xs text-stone-500">
-          {propuesta.extraccion.justificacion ?? "Sin justificación"}
-          {" · "}
-          {propuesta.extraccion.proveedor}
-        </p>
-      </section>
 
-      <section className="mt-3" aria-label="Acciones exactas">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-stone-500">
-          Acciones
-        </h3>
-        {acciones.length === 0 ? (
-          <p className="mt-1 text-sm text-stone-600">
-            No quedan acciones en la corrección.
+        <section className="mt-4" aria-label="Orden original">
+          <Titulo>Orden original</Titulo>
+          <p className="mt-1.5 whitespace-pre-wrap rounded-fila border border-line bg-surface px-3 py-2 text-sm text-ink">
+            {propuesta.orden_texto}
           </p>
-        ) : (
-          <div className="mt-1 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="text-xs text-stone-500">
-                  <th className="py-1 pr-3 font-medium">Empleado</th>
-                  <th className="py-1 pr-3 font-medium">Fecha</th>
-                  <th className="py-1 pr-3 font-medium">Turno o tipo</th>
-                  {editando ? <th className="py-1 font-medium"> </th> : null}
-                </tr>
-              </thead>
-              <tbody>
-                {acciones.map((accion, indice) => (
-                  <tr
-                    key={`${accion.tipo}-${indice}`}
-                    className="border-t border-stone-200"
-                  >
-                    <td className="py-2 pr-3 align-top">
-                      {nombreDe(propuesta, accion.empleado_id)}
-                      <span className="mt-0.5 block text-xs text-stone-500">
-                        {ACCION_ETIQUETA[accion.tipo]}
-                      </span>
-                    </td>
-                    <td className="py-2 pr-3 align-top">
-                      {editando ? (
-                        accion.tipo === "registrar_ausencia" ? (
-                          <span className="flex flex-col gap-1">
-                            <input
-                              aria-label={`Inicio de la fila ${indice + 1}`}
-                              className="rounded border border-stone-300 px-2 py-1"
-                              type="date"
-                              value={accion.fecha_inicio}
-                              onChange={(evento) =>
-                                setBorrador((previo) =>
-                                  previo.map((fila, i) =>
-                                    i === indice && fila.tipo === "registrar_ausencia"
-                                      ? { ...fila, fecha_inicio: evento.target.value }
-                                      : fila,
-                                  ),
-                                )
-                              }
-                            />
-                            <input
-                              aria-label={`Fin de la fila ${indice + 1}`}
-                              className="rounded border border-stone-300 px-2 py-1"
-                              type="date"
-                              value={accion.fecha_fin}
-                              onChange={(evento) =>
-                                setBorrador((previo) =>
-                                  previo.map((fila, i) =>
-                                    i === indice && fila.tipo === "registrar_ausencia"
-                                      ? { ...fila, fecha_fin: evento.target.value }
-                                      : fila,
-                                  ),
-                                )
-                              }
-                            />
-                          </span>
-                        ) : (
-                          <input
-                            aria-label={`Fecha de la fila ${indice + 1}`}
-                            className="rounded border border-stone-300 px-2 py-1"
-                            type="date"
-                            value={accion.fecha}
-                            onChange={(evento) =>
-                              setBorrador((previo) =>
-                                previo.map((fila, i) => {
-                                  if (i !== indice || fila.tipo === "registrar_ausencia") {
-                                    return fila;
-                                  }
-                                  return { ...fila, fecha: evento.target.value };
-                                }),
-                              )
-                            }
-                          />
-                        )
-                      ) : (
-                        fechaDe(accion)
-                      )}
-                    </td>
-                    <td className="py-2 pr-3 align-top">
-                      {editando && accion.tipo === "asignar_turno" ? (
-                        <select
-                          aria-label={`Turno de la fila ${indice + 1}`}
-                          className="rounded border border-stone-300 bg-white px-2 py-1"
-                          value={accion.turno}
-                          onChange={(evento) => {
-                            const turno = evento.target.value as Turno;
-                            setBorrador((previo) =>
-                              previo.map((fila, i) =>
-                                i === indice && fila.tipo === "asignar_turno"
-                                  ? { ...fila, turno }
-                                  : fila,
-                              ),
-                            );
-                          }}
-                        >
-                          <option value="M">Mañana</option>
-                          <option value="T">Tarde</option>
-                          <option value="N">Noche</option>
-                        </select>
-                      ) : editando && accion.tipo === "registrar_ausencia" ? (
-                        <select
-                          aria-label="Tipo de ausencia"
-                          className="rounded border border-stone-300 bg-white px-2 py-1"
-                          value={accion.tipo_ausencia}
-                          onChange={(evento) => {
-                            const tipo = evento.target.value as TipoAusencia;
-                            setBorrador((previo) =>
-                              previo.map((fila, i) =>
-                                i === indice && fila.tipo === "registrar_ausencia"
-                                  ? { ...fila, tipo_ausencia: tipo }
-                                  : fila,
-                              ),
-                            );
-                          }}
-                        >
-                          <option value="vacaciones">Vacaciones</option>
-                          <option value="incapacidad">Incapacidad</option>
-                          <option value="permiso">Permiso</option>
-                          <option value="licencia">Licencia</option>
-                        </select>
-                      ) : (
-                        detalleDe(accion)
-                      )}
-                    </td>
+        </section>
+
+        <section className="mt-4" aria-label="Extracción interpretada">
+          <Titulo>Interpretación</Titulo>
+          <p className="mt-1.5 text-sm text-ink">
+            {propuesta.extraccion.empleado}
+            {" · "}
+            {propuesta.extraccion.accion}
+            {propuesta.extraccion.turno
+              ? ` · ${TURNO_ETIQUETA[propuesta.extraccion.turno]}`
+              : ""}
+            {propuesta.extraccion.fechas.length > 0
+              ? ` · ${propuesta.extraccion.fechas.join(", ")}`
+              : ""}
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            {propuesta.extraccion.justificacion ?? "Sin justificación"}
+            {" · "}
+            {propuesta.extraccion.proveedor}
+          </p>
+        </section>
+
+        <section className="mt-4" aria-label="Acciones exactas">
+          <Titulo>Lo que se escribirá</Titulo>
+          {acciones.length === 0 ? (
+            <p className="mt-1.5 text-sm text-muted">
+              No quedan acciones en la corrección.
+            </p>
+          ) : (
+            <div className="mt-1.5 overflow-x-auto rounded-fila border border-line bg-surface">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="bg-sand/70 text-xs text-muted">
+                    <th className="px-3 py-2 font-semibold">Empleado</th>
+                    <th className="px-3 py-2 font-semibold">Fecha</th>
+                    <th className="px-3 py-2 font-semibold">Turno o tipo</th>
                     {editando ? (
-                      <td className="py-2 align-top">
-                        <button
-                          type="button"
-                          className="text-xs text-stone-600 underline"
-                          onClick={() =>
-                            setBorrador((previo) =>
-                              previo.filter((_, i) => i !== indice),
-                            )
-                          }
-                        >
-                          Quitar
-                        </button>
-                      </td>
+                      <th className="px-3 py-2 font-semibold"> </th>
                     ) : null}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+                </thead>
+                <tbody>
+                  {acciones.map((accion, indice) => (
+                    <tr
+                      key={`${accion.tipo}-${indice}`}
+                      className="border-t border-line"
+                    >
+                      <td className="px-3 py-2.5 align-top font-medium text-ink">
+                        {nombreDe(propuesta, accion.empleado_id)}
+                        <span className="mt-0.5 block text-xs font-normal text-muted">
+                          {ACCION_ETIQUETA[accion.tipo]}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 align-top text-ink">
+                        {editando ? (
+                          accion.tipo === "registrar_ausencia" ? (
+                            <span className="flex flex-col gap-1">
+                              <input
+                                aria-label={`Inicio de la fila ${indice + 1}`}
+                                className={CLASE_CAMPO}
+                                type="date"
+                                value={accion.fecha_inicio}
+                                onChange={(evento) =>
+                                  setBorrador((previo) =>
+                                    previo.map((fila, i) =>
+                                      i === indice &&
+                                      fila.tipo === "registrar_ausencia"
+                                        ? {
+                                            ...fila,
+                                            fecha_inicio: evento.target.value,
+                                          }
+                                        : fila,
+                                    ),
+                                  )
+                                }
+                              />
+                              <input
+                                aria-label={`Fin de la fila ${indice + 1}`}
+                                className={CLASE_CAMPO}
+                                type="date"
+                                value={accion.fecha_fin}
+                                onChange={(evento) =>
+                                  setBorrador((previo) =>
+                                    previo.map((fila, i) =>
+                                      i === indice &&
+                                      fila.tipo === "registrar_ausencia"
+                                        ? {
+                                            ...fila,
+                                            fecha_fin: evento.target.value,
+                                          }
+                                        : fila,
+                                    ),
+                                  )
+                                }
+                              />
+                            </span>
+                          ) : (
+                            <input
+                              aria-label={`Fecha de la fila ${indice + 1}`}
+                              className={CLASE_CAMPO}
+                              type="date"
+                              value={accion.fecha}
+                              onChange={(evento) =>
+                                setBorrador((previo) =>
+                                  previo.map((fila, i) => {
+                                    if (
+                                      i !== indice ||
+                                      fila.tipo === "registrar_ausencia"
+                                    ) {
+                                      return fila;
+                                    }
+                                    return { ...fila, fecha: evento.target.value };
+                                  }),
+                                )
+                              }
+                            />
+                          )
+                        ) : (
+                          fechaDe(accion)
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5 align-top text-ink">
+                        {editando && accion.tipo === "asignar_turno" ? (
+                          <select
+                            aria-label={`Turno de la fila ${indice + 1}`}
+                            className={CLASE_CAMPO}
+                            value={accion.turno}
+                            onChange={(evento) => {
+                              const turno = evento.target.value as Turno;
+                              setBorrador((previo) =>
+                                previo.map((fila, i) =>
+                                  i === indice && fila.tipo === "asignar_turno"
+                                    ? { ...fila, turno }
+                                    : fila,
+                                ),
+                              );
+                            }}
+                          >
+                            <option value="M">Mañana</option>
+                            <option value="T">Tarde</option>
+                            <option value="N">Noche</option>
+                          </select>
+                        ) : editando && accion.tipo === "registrar_ausencia" ? (
+                          <select
+                            aria-label="Tipo de ausencia"
+                            className={CLASE_CAMPO}
+                            value={accion.tipo_ausencia}
+                            onChange={(evento) => {
+                              const tipo = evento.target.value as TipoAusencia;
+                              setBorrador((previo) =>
+                                previo.map((fila, i) =>
+                                  i === indice &&
+                                  fila.tipo === "registrar_ausencia"
+                                    ? { ...fila, tipo_ausencia: tipo }
+                                    : fila,
+                                ),
+                              );
+                            }}
+                          >
+                            <option value="vacaciones">Vacaciones</option>
+                            <option value="incapacidad">Incapacidad</option>
+                            <option value="permiso">Permiso</option>
+                            <option value="licencia">Licencia</option>
+                          </select>
+                        ) : (
+                          <span className="inline-flex rounded-md bg-primary-tint px-2 py-0.5 text-[13px] font-semibold text-primary">
+                            {detalleDe(accion)}
+                          </span>
+                        )}
+                      </td>
+                      {editando ? (
+                        <td className="px-3 py-2.5 align-top">
+                          <button
+                            type="button"
+                            className="text-xs font-medium text-danger underline"
+                            onClick={() =>
+                              setBorrador((previo) =>
+                                previo.filter((_, i) => i !== indice),
+                              )
+                            }
+                          >
+                            Quitar
+                          </button>
+                        </td>
+                      ) : null}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
 
-      <section className="mt-3" aria-label="Avisos">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-stone-500">
-          Avisos
-        </h3>
-        {propuesta.contexto.solapes_detectados.length === 0 &&
-        propuesta.contexto.ausencias_en_rango.length === 0 ? (
-          <p className="mt-1 text-sm text-stone-600">
-            No hay solapes con asignaciones ni ausencias aprobadas.
+        <section className="mt-4" aria-label="Avisos">
+          <Titulo>Avisos</Titulo>
+          {propuesta.contexto.solapes_detectados.length === 0 &&
+          propuesta.contexto.ausencias_en_rango.length === 0 ? (
+            <p className="mt-1.5 text-sm text-muted">
+              No hay solapes con asignaciones ni ausencias aprobadas.
+            </p>
+          ) : (
+            <ul className="mt-1.5 space-y-1.5 text-sm text-amber-ink">
+              {propuesta.contexto.solapes_detectados.map((solape) => (
+                <li
+                  key={`${solape.empleado_id}-${solape.fecha}-${solape.turno}`}
+                  className="flex items-start gap-2"
+                >
+                  <TriangleAlert
+                    size={15}
+                    aria-hidden="true"
+                    className="mt-0.5 shrink-0"
+                  />
+                  <span>
+                    Solape: {solape.empleado} ya tiene turno {solape.turno} el{" "}
+                    {solape.fecha} ({solape.estado}).
+                  </span>
+                </li>
+              ))}
+              {propuesta.contexto.ausencias_en_rango.map((ausencia) => (
+                <li
+                  key={`${ausencia.empleado_id}-${ausencia.tipo}-${ausencia.fecha_inicio}`}
+                  className="flex items-start gap-2"
+                >
+                  <TriangleAlert
+                    size={15}
+                    aria-hidden="true"
+                    className="mt-0.5 shrink-0"
+                  />
+                  <span>
+                    Ausencia aprobada: {ausencia.empleado}, {ausencia.tipo} del{" "}
+                    {ausencia.fecha_inicio} al {ausencia.fecha_fin}.
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="mt-4" aria-label="Auditoría">
+          <Titulo>Auditoría</Titulo>
+          {veredicto ? (
+            <div className="mt-1.5">
+              <InsigniaVeredicto veredicto={veredicto.veredicto} />
+              {veredicto.razones.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-0.5 pl-5 text-sm text-ink">
+                  {veredicto.razones.map((razon, indice) => (
+                    <li key={`${indice}-${razon}`}>{razon}</li>
+                  ))}
+                </ul>
+              ) : null}
+              {veredicto.normas_citadas.length > 0 ? (
+                <p className="mt-2 text-xs text-muted">
+                  Normas citadas:{" "}
+                  {veredicto.normas_citadas
+                    .map((norma) => `${norma.fuente} ${norma.articulo}`)
+                    .join(" · ")}
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-sand px-3 py-1 text-[13px] font-semibold text-muted">
+              <CircleHelp size={14} aria-hidden="true" />
+              <span>sin auditar</span>
+            </p>
+          )}
+          {auditorRechazo && !decidida ? (
+            <p className="mt-2 text-sm text-ink">
+              El auditor rechazó la propuesta. No se puede aprobar tal cual;
+              puedes corregirla o rechazarla.
+            </p>
+          ) : null}
+        </section>
+
+        {resumen ? (
+          <p className="mt-4 text-sm font-semibold text-ink" role="status">
+            {textoResumen(resumen)}
           </p>
-        ) : (
-          <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-amber-900">
-            {propuesta.contexto.solapes_detectados.map((solape) => (
-              <li key={`${solape.empleado_id}-${solape.fecha}-${solape.turno}`}>
-                Solape: {solape.empleado} ya tiene turno {solape.turno} el{" "}
-                {solape.fecha} ({solape.estado}).
-              </li>
-            ))}
-            {propuesta.contexto.ausencias_en_rango.map((ausencia) => (
-              <li
-                key={`${ausencia.empleado_id}-${ausencia.tipo}-${ausencia.fecha_inicio}`}
-              >
-                Ausencia aprobada: {ausencia.empleado}, {ausencia.tipo} del{" "}
-                {ausencia.fecha_inicio} al {ausencia.fecha_fin}.
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="mt-3" aria-label="Auditoría">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-stone-500">
-          Auditoría
-        </h3>
-        {propuesta.veredicto_auditor ? (
-          <div className="mt-1 text-sm">
-            <p>{propuesta.veredicto_auditor.veredicto}</p>
-            {propuesta.veredicto_auditor.razones.length > 0 ? (
-              <ul className="mt-1 list-disc pl-4 text-stone-700">
-                {propuesta.veredicto_auditor.razones.map((razon, indice) => (
-                  <li key={`${indice}-${razon}`}>{razon}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        ) : (
-          <p className="mt-1 text-sm text-stone-600">sin auditar</p>
-        )}
-        {auditorRechazo && !decidida ? (
-          <p className="mt-1 text-sm text-stone-700">
-            El auditor rechazó la propuesta. No se puede aprobar tal cual;
-            puedes corregirla o rechazarla.
+        ) : propuesta.estado !== "pendiente" ? (
+          <p className="mt-4 text-sm font-semibold text-ink" role="status">
+            Esta propuesta ya está {propuesta.estado}.
           </p>
         ) : null}
-      </section>
-
-      {resumen ? (
-        <p className="mt-3 text-sm font-medium text-stone-900" role="status">
-          {textoResumen(resumen)}
-        </p>
-      ) : propuesta.estado !== "pendiente" ? (
-        <p className="mt-3 text-sm font-medium text-stone-900" role="status">
-          Esta propuesta ya está {propuesta.estado}.
-        </p>
-      ) : null}
-      {error ? (
-        <p className="mt-3 text-sm text-red-700" role="alert">
-          {error}
-        </p>
-      ) : null}
-      {enviando ? (
-        <p className="mt-3 text-xs text-stone-500" aria-live="polite">
-          Guardando la decisión…
-        </p>
-      ) : null}
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        <button
-          type="button"
-          className="rounded-lg bg-stone-800 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-          disabled={enviando || decidida || auditorRechazo}
-          onClick={() => void decidir("aprobar")}
-        >
-          Aprobar
-        </button>
-        {editando ? (
-          <button
-            type="button"
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm disabled:opacity-50"
-            disabled={enviando || decidida}
-            onClick={() => void decidir("corregir")}
-          >
-            Enviar corrección
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm disabled:opacity-50"
-            disabled={enviando || decidida}
-            onClick={() => {
-              setBorrador(propuesta.acciones.map((accion) => ({ ...accion })));
-              setEditando(true);
-              setError(null);
-            }}
-          >
-            Corregir
-          </button>
-        )}
-        {editando ? (
-          <button
-            type="button"
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm disabled:opacity-50"
-            disabled={enviando}
-            onClick={() => {
-              setBorrador(propuesta.acciones.map((accion) => ({ ...accion })));
-              setEditando(false);
-              setError(null);
-            }}
-          >
-            Cancelar edición
-          </button>
+        {error ? (
+          <p className="mt-3 text-sm font-medium text-danger" role="alert">
+            {error}
+          </p>
         ) : null}
-        <button
-          type="button"
-          className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm disabled:opacity-50"
-          disabled={enviando || decidida}
-          onClick={() => void decidir("rechazar")}
-        >
-          Rechazar
-        </button>
+        {enviando ? (
+          <p className="mt-3 text-xs text-muted" aria-live="polite">
+            Guardando la decisión…
+          </p>
+        ) : null}
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className={BOTON_PRIMARIO}
+            disabled={enviando || decidida || auditorRechazo}
+            onClick={() => void decidir("aprobar")}
+          >
+            Aprobar
+          </button>
+          {editando ? (
+            <button
+              type="button"
+              className={BOTON_SECUNDARIO}
+              disabled={enviando || decidida}
+              onClick={() => void decidir("corregir")}
+            >
+              Enviar corrección
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={BOTON_SECUNDARIO}
+              disabled={enviando || decidida}
+              onClick={() => {
+                setBorrador(propuesta.acciones.map((accion) => ({ ...accion })));
+                setEditando(true);
+                setError(null);
+              }}
+            >
+              Corregir
+            </button>
+          )}
+          {editando ? (
+            <button
+              type="button"
+              className={BOTON_SECUNDARIO}
+              disabled={enviando}
+              onClick={() => {
+                setBorrador(propuesta.acciones.map((accion) => ({ ...accion })));
+                setEditando(false);
+                setError(null);
+              }}
+            >
+              Cancelar edición
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className={BOTON_PELIGRO}
+            disabled={enviando || decidida}
+            onClick={() => void decidir("rechazar")}
+          >
+            Rechazar
+          </button>
+        </div>
       </div>
     </article>
+  );
+}
+
+function InsigniaVeredicto({ veredicto }: { veredicto: Veredicto }) {
+  const { icono: Icono, clases } = INSIGNIA_VEREDICTO[veredicto];
+  return (
+    <p
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-bold capitalize ring-1 ring-inset ring-current/25 ${clases}`}
+    >
+      <Icono size={15} aria-hidden="true" />
+      <span>{veredicto}</span>
+    </p>
   );
 }

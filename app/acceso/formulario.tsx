@@ -35,7 +35,7 @@ export function FormularioAcceso() {
 
   return (
     <form onSubmit={enviar} className="flex flex-col gap-3">
-      <label htmlFor="codigo" className="text-sm font-medium">
+      <label htmlFor="codigo" className="text-sm font-semibold text-ink">
         Código de acceso
       </label>
       <input
@@ -45,17 +45,17 @@ export function FormularioAcceso() {
         autoFocus
         value={codigo}
         onChange={(e) => setCodigo(e.target.value)}
-        className="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm"
+        className="rounded-boton border border-line bg-surface px-3 py-2.5 text-sm text-ink"
       />
       {error ? (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm font-medium text-danger">
           {error}
         </p>
       ) : null}
       <button
         type="submit"
         disabled={enviando || codigo.length === 0}
-        className="rounded-md bg-stone-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-boton bg-primary px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
       >
         Entrar
       </button>
