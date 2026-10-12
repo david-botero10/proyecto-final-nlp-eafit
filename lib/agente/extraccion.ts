@@ -3,6 +3,13 @@ import { extraccionModeloSchema } from "@/mcp/esquemas";
 import type { Extraccion, ProveedorExtraccion } from "@/lib/tipos";
 import { crearModelo } from "./modelo";
 
+// Token compartido con los servicios de modelos en Modal (deploy/modal).
+// Sin MODELOS_TOKEN (modo local) no se envía cabecera.
+function authModelos(): Record<string, string> {
+  const token = process.env.MODELOS_TOKEN;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 const FESTIVOS_2026 = [
   "2026-01-01 Año Nuevo",
   "2026-01-12 Reyes Magos",
@@ -148,7 +155,7 @@ async function extraerConLora(
 ): Promise<Extraccion> {
   const respuesta = await fetcher(`${url}/extraer`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authModelos() },
     body: JSON.stringify({ orden: ordenTexto, fecha_referencia: fechaIso }),
     signal: AbortSignal.timeout(8000),
   });
