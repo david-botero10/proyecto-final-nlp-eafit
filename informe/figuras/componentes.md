@@ -10,7 +10,7 @@ flowchart TB
 
     subgraph BACK["Backend orquestador (Next.js, TypeScript)"]
         RT["Router de intención"]
-        AS["Asistente<br/>Grok 4.6 (xAI) · tool use + planificación"]
+        AS["Asistente<br/>Grok 4.7 (xAI) · tool use + planificación"]
         MEM["Memoria de conversación<br/>y perfil de usuario (rol, equipo)"]
         GRD["Guardrails de runtime"]
     end
