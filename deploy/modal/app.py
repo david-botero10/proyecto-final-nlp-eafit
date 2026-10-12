@@ -35,6 +35,16 @@ VENTANA_APAGADO_EXTRACTOR = 120
 # emula bf16; el 0.8B en 4-bit ocupa < 2 GB, sobra con cualquiera.
 GPU_EXTRACTOR = "L4"
 
+# Modal exige un medio de pago registrado para funciones con GPU. Con
+#   RELEVO_CON_EXTRACTOR=0 modal deploy deploy/modal/app.py
+# se despliegan solo los embeddings (CPU) y la web usa Grok como extractor.
+CON_EXTRACTOR = os.environ.get("RELEVO_CON_EXTRACTOR", "1") == "1"
+
+# El re-ranker en CPU tarda ~26 s con 20 fragmentos: la web lo corta a los 3 s,
+# pero el contenedor sigue calculando y encola los embeddings. Apagado, /rerank
+# responde 501 al instante y la búsqueda usa RRF, la configuración evaluada.
+CON_RERANKER = os.environ.get("RELEVO_CON_RERANKER", "0") == "1"
+
 # flash-linear-attention acelera la capa Gated DeltaNet de Qwen3.5. Sin ella,
 # transformers usa la implementación en PyTorch (más lenta, mismo resultado).
 # Déjalo apagado salvo que se pruebe que instala limpio en la imagen.
@@ -90,12 +100,26 @@ def agregar_auth(app):
     return app
 
 
-def construir_app_embeddings():
-    """Rutas de ml/servir.py reutilizadas en una app nueva, con token."""
-    import servir  # ml/servir.py (en /root dentro de la imagen)
-    from fastapi import FastAPI
+def construir_app_embeddings(con_reranker: bool | None = None):
+    """Rutas de ml/servir.py reutilizadas en una app nueva, con token.
 
+    Sin re-ranker, /rerank responde 501 antes de llegar a la ruta original,
+    que cargaría el modelo desde la caché del volumen.
+    """
+    import servir  # ml/servir.py (en /root dentro de la imagen)
+    from fastapi import FastAPI, HTTPException
+
+    if con_reranker is None:
+        con_reranker = CON_RERANKER
     app = FastAPI(title="Relevo embed (Modal)")
+    if not con_reranker:
+
+        @app.post("/rerank")
+        def rerank_desactivado() -> None:
+            raise HTTPException(
+                status_code=501, detail="El re-ranker no está disponible."
+            )
+
     app.include_router(servir.app.router)
     return agregar_auth(app)
 
@@ -115,7 +139,14 @@ vol_hf = modal.Volume.from_name(VOLUMEN_HF, create_if_missing=True)
 vol_adapters = modal.Volume.from_name(VOLUMEN_ADAPTERS, create_if_missing=True)
 secreto = modal.Secret.from_name(SECRETO, required_keys=["MODELOS_TOKEN"])
 
-_ENTORNO = {"HF_HOME": RUTA_HF, "PYTHONUNBUFFERED": "1"}
+# La bandera viaja a la imagen para que el contenedor defina las mismas
+# funciones que el despliegue.
+_ENTORNO = {
+    "HF_HOME": RUTA_HF,
+    "PYTHONUNBUFFERED": "1",
+    "RELEVO_CON_EXTRACTOR": "1" if CON_EXTRACTOR else "0",
+    "RELEVO_CON_RERANKER": "1" if CON_RERANKER else "0",
+}
 
 
 def _con_codigo_ml(imagen: modal.Image, extractor: bool) -> modal.Image:
@@ -186,11 +217,10 @@ def descargar_modelos() -> None:
     from huggingface_hub import snapshot_download
 
     ignorar = ["*.onnx", "onnx/*", "*.msgpack", "*.h5", "imgs/*", "*.ot"]
-    for repo in (
-        "BAAI/bge-m3",
-        "BAAI/bge-reranker-v2-m3",
-        "Qwen/Qwen3.5-0.8B",
-    ):
+    repos = ["BAAI/bge-m3", "BAAI/bge-reranker-v2-m3"]
+    if CON_EXTRACTOR:
+        repos.append("Qwen/Qwen3.5-0.8B")
+    for repo in repos:
         print("descargando", repo, flush=True)
         snapshot_download(repo, ignore_patterns=ignorar)
     vol_hf.commit()
@@ -218,6 +248,8 @@ class Embeddings:
         from corpus_lib.embeddings import _cargar_modelo
 
         _cargar_modelo()  # bge-m3, una vez por contenedor
+        if not CON_RERANKER:
+            return  # /rerank responde 501 y la web usa el orden de RRF
         try:
             servir._cargar_reranker()  # opcional: si falla, /rerank da 501
         except Exception as exc:  # noqa: BLE001
@@ -230,43 +262,44 @@ class Embeddings:
 
 # --- Servicio del extractor -------------------------------------------------
 
+if CON_EXTRACTOR:
 
-@app.cls(
-    image=imagen_extractor,
-    gpu=GPU_EXTRACTOR,
-    volumes={RUTA_HF: vol_hf, RUTA_ADAPTERS: vol_adapters},
-    secrets=[secreto],
-    min_containers=0,  # escala a cero: si tarda, el web cae a Grok
-    scaledown_window=VENTANA_APAGADO_EXTRACTOR,
-    timeout=600,
-)
-class Extractor:
-    @modal.enter()
-    def cargar(self) -> None:
-        import threading
+    @app.cls(
+        image=imagen_extractor,
+        gpu=GPU_EXTRACTOR,
+        volumes={RUTA_HF: vol_hf, RUTA_ADAPTERS: vol_adapters},
+        secrets=[secreto],
+        min_containers=0,  # escala a cero: si tarda, el web cae a Grok
+        scaledown_window=VENTANA_APAGADO_EXTRACTOR,
+        timeout=600,
+    )
+    class Extractor:
+        @modal.enter()
+        def cargar(self) -> None:
+            import threading
 
-        from extractor.constantes import MODELO_BASE
-        from extractor.evaluar import generar_extraccion
-        from extractor.modelo import cargar_para_servicio
-        from peft import PeftModel
+            from extractor.constantes import MODELO_BASE
+            from extractor.evaluar import generar_extraccion
+            from extractor.modelo import cargar_para_servicio
+            from peft import PeftModel
 
-        ruta = Path(RUTA_ADAPTERS) / ADAPTER_EXTRACTOR
-        if not (ruta / "adapter_config.json").is_file():
-            raise RuntimeError(
-                f"falta el adapter en el volumen {VOLUMEN_ADAPTERS}: {ruta}"
-            )
-        modelo, tokenizer = cargar_para_servicio(MODELO_BASE)
-        modelo = PeftModel.from_pretrained(modelo, str(ruta))
-        modelo.eval()
-        cerrojo = threading.Lock()  # una generación a la vez por GPU
+            ruta = Path(RUTA_ADAPTERS) / ADAPTER_EXTRACTOR
+            if not (ruta / "adapter_config.json").is_file():
+                raise RuntimeError(
+                    f"falta el adapter en el volumen {VOLUMEN_ADAPTERS}: {ruta}"
+                )
+            modelo, tokenizer = cargar_para_servicio(MODELO_BASE)
+            modelo = PeftModel.from_pretrained(modelo, str(ruta))
+            modelo.eval()
+            cerrojo = threading.Lock()  # una generación a la vez por GPU
 
-        def completar(orden: str, fecha_referencia: str) -> str:
-            fila = {"orden": orden, "fecha_referencia": fecha_referencia}
-            with cerrojo:
-                return generar_extraccion(modelo, tokenizer, fila)
+            def completar(orden: str, fecha_referencia: str) -> str:
+                fila = {"orden": orden, "fecha_referencia": fecha_referencia}
+                with cerrojo:
+                    return generar_extraccion(modelo, tokenizer, fila)
 
-        self._completar = completar
+            self._completar = completar
 
-    @modal.asgi_app(label="relevo-extractor")
-    def web(self):
-        return construir_app_extractor(self._completar)
+        @modal.asgi_app(label="relevo-extractor")
+        def web(self):
+            return construir_app_extractor(self._completar)

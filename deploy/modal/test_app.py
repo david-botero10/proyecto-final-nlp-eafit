@@ -94,7 +94,7 @@ def test_rerank_ok_y_vacio(modulo, monkeypatch):
             return [0.9 - 0.1 * i for i, _ in enumerate(pares)]
 
     monkeypatch.setattr(servir, "_cargar_reranker", lambda: Falso())
-    c = TestClient(modulo.construir_app_embeddings())
+    c = TestClient(modulo.construir_app_embeddings(con_reranker=True))
     r = c.post("/rerank", json={"consulta": "q", "textos": ["a", "b"]}, headers=AUTH)
     assert r.json() == {"scores": [0.9, 0.8]}
     r = c.post("/rerank", json={"consulta": "q", "textos": []}, headers=AUTH)
@@ -152,3 +152,17 @@ def test_falla_cerrado_sin_token_configurado(modulo, monkeypatch):
     cuerpo = {"orden": "x", "fecha_referencia": "2026-10-12"}
     assert c.post("/extraer", json=cuerpo, headers=AUTH).status_code == 401
     assert c.get("/salud").status_code == 200
+
+
+def test_rerank_desactivado_responde_501_sin_cargar_modelo(modulo, monkeypatch):
+    import servir
+
+    def no_cargar():
+        raise AssertionError("no debe cargar el re-ranker")
+
+    monkeypatch.setattr(servir, "_cargar_reranker", no_cargar)
+    c = TestClient(modulo.construir_app_embeddings(con_reranker=False))
+    r = c.post("/rerank", json={"consulta": "q", "textos": ["a"]}, headers=AUTH)
+    assert r.status_code == 501
+    r = c.post("/rerank", json={"consulta": "q", "textos": ["a"]})
+    assert r.status_code == 401
