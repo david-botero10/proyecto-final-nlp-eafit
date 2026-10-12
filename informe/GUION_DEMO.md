@@ -6,6 +6,18 @@ Verificada el 12 de octubre de 2026 con Grok 4.7 (`RELEVO_MODELO=grok-4.7`). Tod
 
 Regla de oro: **el modelo no escribe; la persona aprueba**. Si algo sale distinto de lo esperado, se dice lo que llegó. No se corrige en voz alta como si el sistema hubiera acertado.
 
+## 0. Demo en la nube (camino principal)
+
+La demo corre en **https://relevo-silk.vercel.app** (Vercel + Neon + Modal; ver `docs/DESPLIEGUE.md` y `deploy/modal/README.md`). La pila local de las secciones siguientes es el **plan B**.
+
+- **Código de acceso:** está en el `.env` del equipo como `NUBE_ACCESS_CODE`. Se comparte por un canal privado; nunca en la presentación ni en el chat del curso.
+- **Quince minutos antes:** abrir la URL, entrar con el código y lanzar una pregunta cualquiera (por ejemplo, la tarjeta «Recargo nocturno»). Eso despierta Neon, que se suspende tras 5 minutos sin uso, y calienta las funciones de Vercel. Comprobar en el carril de actividad que la búsqueda diga «búsqueda híbrida»; si dice «léxica», el servicio de embeddings de Modal no está respondiendo.
+- **Durante la demo:** usar las cuatro tarjetas de la pantalla de bienvenida (Norma, Turnos, Orden) y aprobar en la tarjeta. Tiempos medidos el 12 de octubre: recargo ~20 s, turnos ~9 s, orden con auditor ~18 s, aprobación ~0,3 s.
+- **El extractor propio no está en la nube** (Modal exige un medio de pago para GPU): en la nube las órdenes las interpreta Grok 4.7. La tarjeta lo dice («Interpretó Grok 4.7»).
+- **Limpiar Neon tras cada ensayo:** el mismo SQL de reseteo del paso 1.4, contra Neon (`DATABASE_URL_NEON_DIRECTA` del `.env`). Esperado: `120 | 0 | 0`.
+- **Después de la presentación (obligatorio):** apagar los embeddings de Modal, que consumen créditos mientras están encendidos (~US$3,8 por día):
+  `relevo-ml-venv/Scripts/python.exe -m modal app stop relevo-modelos`
+
 ## 1. Antes de la clase (el día anterior)
 
 1. Traer lo último y las dependencias:
