@@ -1,4 +1,4 @@
-import { Chat } from "@/components/chat";
+import { Chat } from "@/components/chat/chat";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -38,8 +38,10 @@ describe("chat", () => {
     await usuario.type(input, "¿quién cubre el turno de la noche?");
     await usuario.click(screen.getByRole("button", { name: "Enviar" }));
 
-    expect(
-      await screen.findByText("¿quién cubre el turno de la noche?"),
-    ).toBeInTheDocument();
+    // El texto aparece en la burbuja y en el título de la barra superior.
+    const apariciones = await screen.findAllByText(
+      "¿quién cubre el turno de la noche?",
+    );
+    expect(apariciones.length).toBeGreaterThanOrEqual(1);
   });
 });
