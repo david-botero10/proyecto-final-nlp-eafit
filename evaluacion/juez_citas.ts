@@ -73,7 +73,7 @@ function extraerJson(texto: string): unknown {
 }
 
 async function completar(clave: string, system: string, prompt: string): Promise<string> {
-  const modelo = process.env.XAI_MODEL?.trim() || "grok-4.6";
+  const modelo = process.env.XAI_MODEL?.trim() || "grok-4.7";
   const respuesta = await fetch(URL_XAI, {
     method: "POST",
     headers: {
