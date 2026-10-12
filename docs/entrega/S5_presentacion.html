@@ -1,240 +1,632 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Relevo — Presentación (Semana 5, SI7016)</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.7/marked.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.3/mermaid.min.js"></script>
+<title>Relevo — SI7016</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap">
 <style>
-  .reveal { font-family: "Segoe UI", system-ui, sans-serif; }
-  .reveal h1, .reveal h2 { text-transform: none; }
-  .reveal table { font-size: 0.55em; }
-  .reveal pre { font-size: 0.42em; }
-  .reveal .mermaid { background: #fff; }
-  .reveal .mermaid svg { max-width: 100%; height: auto; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; overflow: hidden; background: #0B1210; font-family: 'DM Sans', Arial, sans-serif; }
+body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+#viewport { position: fixed; inset: 0; overflow: hidden; }
+#stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; background: #15211F; }
+
+.slide {
+  position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden;
+  opacity: 0; visibility: hidden;
+  transition: opacity .25s ease, visibility 0s linear .25s;
+}
+.slide.active { opacity: 1; visibility: visible; transition: opacity .25s ease, visibility 0s; z-index: 1; }
+.slide h1, .slide h2, .slide h3, .slide p { margin: 0; }
+.slide > .notes, .slide .notes { display: none; }
+
+#progress { position: fixed; left: 0; bottom: 0; height: 4px; width: 100%; background: rgba(255,255,255,.12); z-index: 20; }
+#progress > i { display: block; height: 100%; width: 0; background: #D99A45; transition: width .25s ease; }
+#counter {
+  position: fixed; right: 16px; bottom: 14px; z-index: 20; padding: 2px 10px; border-radius: 999px;
+  font-size: 14px; font-weight: 500; letter-spacing: .5px; color: #EEF0EC; background: rgba(21,33,31,.72);
+  border: 1px solid rgba(255,255,255,.18); font-variant-numeric: tabular-nums;
+}
+body.hide-chrome #counter, body.hide-chrome #progress { display: none; }
+
+#notes {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; max-height: 42vh; overflow: auto;
+  background: #101917; color: #EEF0EC; border-top: 3px solid #D99A45; padding: 18px 32px 26px;
+  transform: translateY(100%); visibility: hidden; transition: transform .2s ease, visibility 0s linear .2s;
+}
+#notes.open { transform: none; visibility: visible; transition: transform .2s ease, visibility 0s; }
+#notes h2 { font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #D99A45; margin-bottom: 8px; }
+#notes p { font-size: 19px; line-height: 1.5; max-width: 1200px; }
+
+#help {
+  position: fixed; inset: 0; z-index: 40; display: none; align-items: center; justify-content: center;
+  background: rgba(11,18,16,.82);
+}
+#help.open { display: flex; }
+#help .box { background: #F5F3EE; color: #1A1F1E; border-radius: 14px; padding: 28px 36px; max-width: 520px; width: calc(100% - 32px); }
+#help h2 { font-size: 22px; margin-bottom: 14px; }
+#help dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 20px; font-size: 16px; }
+#help dt { font-weight: 700; white-space: nowrap; }
+#help dd { margin: 0; color: #4B5553; }
+#help .close { margin-top: 16px; font-size: 14px; color: #7A8482; }
+kbd { font: inherit; font-weight: 700; background: #E4E0D6; border-radius: 5px; padding: 1px 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .slide, .slide.active, #progress > i, #notes, #notes.open { transition: none !important; }
+}
+
+@page { size: 1920px 1080px; margin: 0; }
+@media print {
+  html, body { height: auto; overflow: visible; background: #fff; }
+  #viewport { position: static; overflow: visible; }
+  #stage { position: static; width: 1920px; height: auto; transform: none !important; background: none; }
+  .slide, .slide.active {
+    position: relative; inset: auto; opacity: 1; visibility: visible; transition: none;
+    break-after: page; page-break-after: always; break-inside: avoid;
+  }
+  .slide:last-of-type { break-after: auto; page-break-after: auto; }
+  #progress, #counter, #notes, #help { display: none !important; }
+}
 </style>
 </head>
 <body>
-<div class="reveal">
-  <div class="slides">
-<section>
-<script type="text/plain" class="fuente-slide"># Relevo
+<div id="viewport">
+<main id="stage" aria-label="Presentación Relevo">
+<section class="slide" id="cover" data-n="1" role="group" aria-roledescription="lámina" aria-label="Lámina 1: Relevo" style="background:#15211F;color:#EEF0EC;font-family:'DM Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between">
 
-Agente de turnos para una pyme colombiana.
-Consultar es autónomo. Escribir exige aprobación.
-
-SI7016 · Universidad EAFIT · 2026-2
-Isabel Jurado · Alejandro Silva · David Botero</script>
-<aside class="notes">Abran con el principio, no con la pila. Una frase: la coordinadora habla en coloquial y la nómina no cambia hasta que ella ve la fila. El resto de la charla cabe en doce minutos si la demo ya está caliente. Los números salen del informe, sección 1.</aside>
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#D99A45">SI7016 · Procesamiento del Lenguaje Natural Aplicado · EAFIT</p>
+<div style="display:flex;flex-direction:column;gap:40px">
+<h1 style="font-size:180px;font-weight:700;line-height:1;letter-spacing:-5px;color:#EEF0EC">Relevo</h1>
+<p style="width:1320px;font-size:48px;line-height:1.25;color:#EEF0EC">Un agente que entiende órdenes de turnos en español coloquial, cita la ley laboral y solo escribe cuando una persona aprueba.</p>
+</div>
+<div style="display:flex;flex-direction:row;justify-content:space-between;align-items:end">
+<p style="font-size:28px;color:#A9BAB6">Isabel Jurado Jaramillo · Alejandro Silva Zuluaga · David Botero Londoño</p>
+<p style="font-size:28px;color:#A9BAB6">Octubre de 2026</p>
+</div>
+<aside class="notes">Relevo es nuestro proyecto final de SI7016. En una frase: un agente conversacional para coordinadores de turnos de pymes colombianas que entiende cómo hablan, consulta la norma laboral citándola, y nunca escribe en la nómina sin que una persona apruebe el cambio. En los próximos minutos: el problema, cómo está construido, qué medimos y qué respondimos a nuestra pregunta de investigación.</aside>
 </section>
-<section>
-<script type="text/plain" class="fuente-slide"># El problema
+<section class="slide" id="problema" data-n="2" role="group" aria-roledescription="lámina" aria-label="Lámina 2: Los asistentes responden bien, pero actúan mal" style="background:#F5F3EE;color:#1A1F1E;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:48px">
 
-Un chat genérico responde.
-Cuando la tarea es **programar un turno**, responder no basta y escribir a ciegas no se puede.
-
-Público: coordinación de turnos, no un perfil técnico.
-Español coloquial: «la otra semana», «el puente», «la mañana».</script>
-<aside class="notes">Caso de la propuesta de la semana 1: clínica, restaurante o vigilancia con rotación. Nosotros fijamos una clínica ficticia. No prometan datos reales: empleados y órdenes son sintéticos, semilla 42.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># El principio
-
-1. Consultar turnos, ausencias y norma: autónomo.
-2. Escribir en la nómina: solo si una persona aprueba la tarjeta.
-3. La tarjeta muestra exactamente las filas que se escriben.
-4. La decisión queda como par de preferencia.</script>
-<aside class="notes">Repitan el 2 y el 3. Es el criterio con el que se defiende la funcionalidad. `ejecutar_propuesta` no es una tool del modelo. Si el auditor no contesta, la tarjeta dice «sin auditar» y el turno sigue.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># Demo
-
-Ocho minutos. Guion: `informe/GUION_DEMO.md`.
-
-1. Perfil de enfermería: quién cubre la noche del sábado.
-2. Recargo nocturno, con el artículo a la vista.
-3. Orden de Doris. La tarjeta trae veredicto.
-4. Se corrige el domingo y se aprueba.
-5. La fila `origen = 'tarjeta'` y el par.
-6. La traza en Phoenix.</script>
-<aside class="notes">No pulsen el ejemplo «Ana»: Ana es de recepción y este perfil debe rechazarla. Doris Herrera Sánchez es de enfermería y el nombre es único. Si no hay clave de xAI, pasen al plan B del guion: no improvisen una respuesta.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># Arquitectura
-
-El asistente conversa. El auditor no.
-MCP habla con los datos. A2A habla entre agentes.
-
-```mermaid
-flowchart LR
-    UI["Chat"] --> AS["Grok 4.6"]
-    AS --> MCP["MCP lectura y propuesta"]
-    AS --> AUD["Auditor A2A"]
-    MCP --> PG["PostgreSQL + pgvector"]
-    AUD --> MCP
-    AS --> EXT["Extractor QLoRA"]
-    PG --> DPO["Pares"]
-    DPO --> EXT
-```</script>
-<aside class="notes">Figura completa en `informe/figuras/componentes.md` y en el informe §4. Tres equipos: enfermería 20, recepción 10, vigilancia 10. Gerencia ve los tres. Un coordinador no propone fuera de su equipo.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># MCP y A2A
-
-**MCP.** Tools con contrato Zod. Lectura con `readOnlyHint`. `ejecutar_propuesta` no está expuesta al modelo.
-
-**A2A.** JSON-RPC `message/send`, sin SDK. Agent Card en `/.well-known/agent.json`.
-
-Domingo 4 de octubre, empleado activo, turno de mañana:
-
-`veredicto: observaciones`
-«El 2026-10-04 es domingo: aplica recargo dominical.»
-Norma: CST art. 179, chunk 193, fuente `cst_pr006`.</script>
-<aside class="notes">Es el mensaje literal del reporte D2, no un ejemplo reconstruido. Errores JSON-RPC en español, del `-32700` al `-32001`. El auditor lee con `relevo_lector`. El informe §5.7 trae el request y el response enteros por si piden el frame.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># RAG con citas
-
-«Recargo nocturno», modo híbrido, 322 ms, re-ranker no cargado (HTTP 501).
-
-| Orden | Artículo | Para qué sirve |
-|---:|---|---|
-| 1 | art. 169 | Base del recargo |
-| 2 | art. 168 | 35 % sobre el diurno |
-| 3 | art. 161 | Jornada y nocturno |
-
-La UI numera Fuentes con enlace al Senado.</script>
-<aside class="notes">Fuente: reporte C1 para el humo, reporte F1 para las 20 preguntas. En léxico puro (reporte B2) «recargo nocturno» abría por el art. 161, y «trabajo nocturno porcentaje» no devolvía nada. Digan esa diferencia. F1, modo híbrido, 20 de 20: recall@3 97,50 %, recall@5 100 %, recall@8 100 %, MRR 0,933. El juez de fidelidad sigue pendiente: no había clave de xAI. El reporte F1 no trae la corrida léxica de esas 20 preguntas.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># Tarjeta y auditor
-
-La orden se extrae, se valida y se guarda `pendiente`.
-El auditor contesta antes de que aparezca la tarjeta.
-
-| Veredicto | Cuándo | Qué puede hacer la persona |
-|---|---|---|
-| rechazado | Empleado inválido o solape duro | Corregir o rechazar. Aprobar va deshabilitado |
-| observaciones | Domingo, festivo, noche, más de 6 días o más de 44 h | Decidir informada |
-| aprobado | Todo pasa | Aprobar |
-
-10 escenarios del reporte D2 cayeron en la clase que el caso buscaba.</script>
-<aside class="notes">El tope es 44 h (Ley 2101, desde julio de 2026), aunque el art. 161 indexado hable de 42 h tras la Ley 2466. Díganlo antes de que lo pregunten. F1: 20/20, precisión 100 % en aprobado (3), observaciones (9) y rechazado (8). La matriz es diagonal. Las 10 trampas nuevas están en el informe §8.3. Es cumplimiento de las reglas, no un rotulado humano independiente.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># Extractor afinado
-
-Qwen3.5-0.8B, QLoRA 4-bit, test congelado n = 65.
-
-| | Base | LoRA v1 |
-|---|---:|---:|
-| Exactitud total | 3,08 % | 76,92 % |
-| Fechas (F1) | 19,18 % | 84,62 % |
-| Acción | 55,38 % | 84,62 % |
-
-Gana en todos los campos frente al base. En v1, la acción sigue siendo el peor campo (84,62 %).</script>
-<aside class="notes">Fuente: reporte C3. El 3 % y el 77 % de la spec son ese 3,08 y ese 76,92, redondeados. Es contra el base, no contra Grok: no había clave. Pico de VRAM 2 871 MiB en una 4060 de 8 GB. El error que queda en C3: «no le deje turno el 12 de octubre» salió como ausencia y con otra fecha. v2 sube la acción a 96,92 %; el detalle y el intervalo están en la diapositiva de DPO.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># Ciclo DPO
-
-Tarjeta → decisión → `pares_preferencia` → DPO sobre v1 → mismo test.
-
-Hoy, en la base local, sin re-sembrar:
-
-- 120 decisiones, todas del `simulador`
-- 91 aprobaciones limpias, 29 correcciones, 29 pares DPO
-- 0 decisiones de una persona
-- Exactitud total: 76,92 % → 83,08 % (+6,15 pp)
-- IC 95 %: v1 [66,15 %, 87,69 %], v2 [73,85 %, 90,77 %]</script>
-<aside class="notes">Fuente: reporte E2. La pregunta de la propuesta: ¿un modelo pequeño, afinado con las correcciones de sus usuarios, puede superar al de frontera en esta tarea, sin sacar los datos de la organización? Hoy supera a su base y el DPO suma 6,15 puntos, con intervalos que se solapan. Las 91 aprobaciones no son pares DPO: `rechazada` va null. La señal útil son las 29 correcciones, y son simuladas. El DPO corrigió la acción `quitar` (50 % → 90 %), no el calendario. Loss 0,693 → 0,586, `rewards/accuracies` 0,6875, 206,434 s, pico 8 428,99 MiB. Grok sigue pendiente.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># Observabilidad
-
-OpenTelemetry → Phoenix, puerto 6006, protobuf.
-JSON OTLP recibe HTTP 415 en esta imagen.
-
-El turno de evidencia, sin modelo, dejó el span `relevo.turno`, kind AGENT, status OK.
-
-Guardrails: 400 si el mensaje va vacío o pasa de 2 000 caracteres, 429 a las 30 peticiones por minuto, y una advertencia si la norma no se cita.</script>
-<aside class="notes">Fuente: reporte E1. Si Phoenix está caído el chat sigue y no escupe el error en cada request. En la demo abran la traza del turno que acaban de hacer, no la captura vieja, salvo que el export falle.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># Evaluación
-
-| Métrica | Qué hay hoy | Qué falta |
-|---|---|---|
-| Extracción | 3,08 % → 76,92 % → 83,08 %, n = 65. IC de v2 [73,85 %, 90,77 %] | Grok |
-| Citas | Híbrido: recall@3 97,50 %, @5 y @8 100 %, MRR 0,933 | Juez LLM |
-| Auditor | 20/20. Precisión 100 %. Matriz diagonal | Rotulado humano independiente |
-| Aprobación | Simulador 75,83 % (91/120). Humanos: 0 | Sesiones |
-
-Pruebas con usuarios: protocolo escrito, sesiones pendientes.</script>
-<aside class="notes">No conviertan 91/120 en «le atinamos al 76 % de los usuarios». Es el simulador contra la etiqueta del generador: 75,83 %. Informe §8. Los intervalos de v1 y v2 se solapan. El protocolo está en `evaluacion/PROTOCOLO_USUARIOS.md`.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># Qué no afirmamos
-
-- No hay cartillas del Ministerio: los URL oficiales no respondieron.
-- No hay voz ni despliegue en Vercel.
-- En Windows el QLoRA corrió sin los kernels lineales. Tardó 4 635 s. Los pesos no están en el repo.
-- «Elizabeth» y «Diego» son dos personas. «Ana» no es de enfermería.
-- «De hoy en ocho» está en +7 en el dataset y en +8 en el prompt de Grok. El guion no usa esa frase.</script>
-<aside class="notes">Esta diapositiva es la de las preguntas incómodas. Mejor decirlas ustedes. Informe §10.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># Cierre
-
-Hay un camino de la orden coloquial a una fila con `origen = 'tarjeta'`, con un veredicto que se lee antes de aprobar.
-
-El extractor pequeño aprende la tarea: 3,08 % → 76,92 % → 83,08 % contra su base. Los intervalos de v1 y v2 se solapan.
-
-Falta medirlo contra Grok y faltan las sesiones con personas.</script>
-<aside class="notes">Cierren con esas dos ausencias y paren. El delta de DPO ya está dicho: corrigió la acción, no las fechas. El informe, la presentación y el guion están en `informe/`. Licencia MIT.</aside>
-</section>
-<section>
-<script type="text/plain" class="fuente-slide"># Gracias
-
-Isabel Jurado Jaramillo
-Alejandro Silva Zuluaga
-David Botero Londoño
-
-Código sintético, corpus público, licencia MIT.</script>
-<aside class="notes">Si piden reproducir: `README.md`, anexo B del informe. Gates: `npm run lint`, `npm test`, `npm run build`. Python 3.11 para el venv de gates.</aside>
-</section>
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2C6E66">El problema</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#1A1F1E">Los asistentes responden bien, pero actúan mal</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:16px;padding:48px">
+<h3 style="font-size:36px;font-weight:600;color:#1A1F1E">Si el modelo escribe solo</h3>
+<p style="font-size:30px;line-height:1.4;color:#4B5553">Un error de fecha o de persona cambia la nómina real sin que nadie lo vea a tiempo.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:16px;padding:48px">
+<h3 style="font-size:36px;font-weight:600;color:#1A1F1E">Si todo se hace a mano</h3>
+<p style="font-size:30px;line-height:1.4;color:#4B5553">El coordinador vuelve a la hoja de cálculo y el agente pierde su razón de ser.</p>
 </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<p style="font-size:36px;font-weight:600;line-height:1.3;color:#2C6E66">Relevo separa las dos cosas: consultar es autónomo; escribir exige la aprobación de una persona.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8482">Relevo · SI7016 · 2</p>
+<aside class="notes">Los coordinadores de turnos de clínicas, restaurantes o vigilancia manejan horarios rotativos y una norma laboral que cambia. Un chat genérico puede contestar dudas, pero dejar que el modelo escriba en la nómina es inaceptable: un error de persona o de fecha pasa directo a la realidad. Y si todo vuelve a hacerse a mano, el agente no aporta nada. Nuestro principio de diseño resuelve esa tensión.</aside>
+</section>
+<section class="slide" id="propuesta" data-n="3" role="group" aria-roledescription="lámina" aria-label="Lámina 3: Tres capacidades, un solo principio" style="background:#F5F3EE;color:#1A1F1E;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:48px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2C6E66">La propuesta</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#1A1F1E">Tres capacidades, un solo principio</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:16px;padding:48px">
+<svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="56" height="56" style="width:56px;height:56px;flex:none" fill="none" stroke="#2C6E66" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8 10h8M8 13h5"/></svg>
+<h3 style="font-size:36px;font-weight:600;line-height:1.2;color:#1A1F1E">Entiende cómo habla el coordinador</h3>
+<p style="font-size:28px;line-height:1.4;color:#4B5553">«Ponle el de la mañana a Ana toda la otra semana» se vuelve empleado, turno y fechas exactas.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:16px;padding:48px">
+<svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="56" height="56" style="width:56px;height:56px;flex:none" fill="none" stroke="#2C6E66" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H20v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H20v-3"/><path d="M9 7.5h7M9 11h5"/></svg>
+<h3 style="font-size:36px;font-weight:600;line-height:1.2;color:#1A1F1E">Responde con la norma citada</h3>
+<p style="font-size:28px;line-height:1.4;color:#4B5553">Código Sustantivo del Trabajo y leyes 2101 y 2466: cada afirmación lleva su artículo.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:16px;padding:48px">
+<svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="56" height="56" style="width:56px;height:56px;flex:none" fill="none" stroke="#2C6E66" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.4 1.9 3-.1 1 2.9 2.5 1.7-.9 2.9.9 2.9-2.5 1.7-1 2.9-3-.1-2.4 1.9-2.4-1.9-3 .1-1-2.9-2.5-1.7.9-2.9-.9-2.9 2.5-1.7 1-2.9 3 .1z"/><path d="M8.5 12.3l2.6 2.6 4.6-5"/></svg>
+<h3 style="font-size:36px;font-weight:600;line-height:1.2;color:#1A1F1E">Propone, no impone</h3>
+<p style="font-size:28px;line-height:1.4;color:#4B5553">Cada cambio llega en una tarjeta. La nómina se escribe solo cuando alguien aprueba.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8482">Relevo · SI7016 · 3</p>
+<aside class="notes">Tres capacidades. Primero, entiende el español real de la coordinación, con fechas relativas y apodos. Segundo, cuando la pregunta es normativa, recupera el artículo del Código Sustantivo del Trabajo o de las reformas y lo cita. Tercero, nunca ejecuta: propone una tarjeta con el cambio exacto y espera la decisión humana.</aside>
+</section>
+<section class="slide" id="demo" data-n="4" role="group" aria-roledescription="lámina" aria-label="Lámina 4: Cuatro conversaciones, un coordinador" style="background:#15211F;color:#EEF0EC;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#D99A45">Demo en vivo · localhost:3000</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#EEF0EC">Cuatro conversaciones, un coordinador</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:24px">
+<div style="display:flex;flex-direction:column;gap:12px;background:#22302E;border:1px solid #3A4B48;border-radius:14px;padding:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#D99A45">01 · Norma</p>
+<p style="font-size:30px;line-height:1.35;color:#EEF0EC">«¿Cuánto me pagan de recargo si trabajo de noche?»</p>
+<p style="font-size:24px;line-height:1.4;color:#A9BAB6">RAG agéntico: el modelo decide buscar y cita el art. 168</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#22302E;border:1px solid #3A4B48;border-radius:14px;padding:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#D99A45">02 · Datos</p>
+<p style="font-size:30px;line-height:1.35;color:#EEF0EC">«¿Quiénes de mi equipo están de turno de noche el sábado 26?»</p>
+<p style="font-size:24px;line-height:1.4;color:#A9BAB6">Herramientas MCP con el alcance del perfil</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#22302E;border:1px solid #3A4B48;border-radius:14px;padding:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#D99A45">03 · Orden</p>
+<p style="font-size:30px;line-height:1.35;color:#EEF0EC">«Ponle el turno de la mañana a Elizabeth María López el próximo domingo»</p>
+<p style="font-size:24px;line-height:1.4;color:#A9BAB6">Tarjeta con el veredicto del auditor: domingo, art. 179</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#D99A45;border:1px solid #D99A45;border-radius:14px;padding:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#15211F">04 · Aprobación</p>
+<p style="font-size:30px;line-height:1.35;color:#15211F">Aprobar en la tarjeta</p>
+<p style="font-size:24px;line-height:1.4;color:#2A2416">La fila se escribe con origen «tarjeta» y nace un par de preferencia</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8FA29E">Relevo · SI7016 · 4</p>
+<aside class="notes">Ahora lo vemos funcionando. Primero, una pregunta de la norma: fíjense en que el modelo decide buscar, y que la respuesta trae el artículo citado. Segundo, entro como coordinadora de enfermería y pregunto por mi equipo: el agente usa las herramientas del servidor MCP y solo ve a su gente. Tercero, una orden en lenguaje coloquial: no se escribe nada, aparece una tarjeta, y el auditor por A2A ya la revisó y advierte que es domingo. Cuarto, apruebo: solo ahí se escribe, y esa decisión queda guardada como dato de entrenamiento. Después de la demo explicamos qué pasó por dentro.</aside>
+</section>
+<section class="slide" id="flujo" data-n="5" role="group" aria-roledescription="lámina" aria-label="Lámina 5: De la orden a la nómina en cinco pasos" data-section="Cómo está construido el agente" style="background:#ECE8DF;color:#1A1F1E;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:48px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2C6E66">Cómo funciona</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#1A1F1E">De la orden a la nómina en cinco pasos</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(5, 1fr);gap:24px">
+<div style="display:flex;flex-direction:column;gap:16px;border-top:4px solid #2C6E66;padding:28px 0 0 0">
+<p style="font-size:44px;font-weight:700;color:#2C6E66">01</p>
+<h3 style="font-size:34px;font-weight:600;color:#1A1F1E">Orden</h3>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">El coordinador escribe como habla.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;border-top:4px solid #2C6E66;padding:28px 0 0 0">
+<p style="font-size:44px;font-weight:700;color:#2C6E66">02</p>
+<h3 style="font-size:34px;font-weight:600;color:#1A1F1E">Extracción</h3>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">Grok o el extractor afinado la vuelven un JSON con empleado, turno y fechas.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;border-top:4px solid #2C6E66;padding:28px 0 0 0">
+<p style="font-size:44px;font-weight:700;color:#2C6E66">03</p>
+<h3 style="font-size:34px;font-weight:600;color:#1A1F1E">Auditoría</h3>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">Un segundo agente revisa por A2A solapes, jornada, domingos y festivos.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;border-top:4px solid #2C6E66;padding:28px 0 0 0">
+<p style="font-size:44px;font-weight:700;color:#2C6E66">04</p>
+<h3 style="font-size:34px;font-weight:600;color:#1A1F1E">Tarjeta</h3>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">Muestra exactamente lo que se va a escribir, con el veredicto del auditor.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;border-top:4px solid #C9822B;padding:28px 0 0 0">
+<p style="font-size:44px;font-weight:700;color:#A5651C">05</p>
+<h3 style="font-size:34px;font-weight:600;color:#1A1F1E">Aprobación</h3>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">Solo entonces se escribe, y la decisión queda como dato de entrenamiento.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6E7775">Relevo · SI7016 · 5</p>
+<aside class="notes">El recorrido de una orden de escritura. El coordinador escribe en lenguaje natural. El extractor la convierte en datos estructurados. Antes de mostrar nada, un segundo agente, el auditor, revisa la propuesta por el protocolo A2A: que la persona exista, que no haya solapes, que se respete la jornada y que se señalen domingos y festivos. La tarjeta muestra el cambio exacto. Y solo con la aprobación humana se escribe, en una transacción, guardando además la decisión como par de preferencia para entrenar.</aside>
+</section>
+<section class="slide" id="arquitectura" data-n="6" role="group" aria-roledescription="lámina" aria-label="Lámina 6: Dos agentes, protocolos abiertos y una sola base" style="background:#F5F3EE;color:#1A1F1E;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2C6E66">Arquitectura</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#1A1F1E">Dos agentes, protocolos abiertos y una sola base</h2>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:14px;padding:32px">
+<h3 style="font-size:30px;font-weight:600;color:#1A1F1E">Chat web</h3>
+<p style="font-size:24px;line-height:1.35;color:#4B5553">Next.js y Vercel AI SDK; muestra citas y tarjetas</p>
+</div>
+<svg class="shape-arrow" aria-hidden="true" focusable="false" viewBox="0 0 56 28" width="56" height="28" style="width:56px;height:28px;flex:none"><polygon points="0,8.4 33.6,8.4 33.6,0 56,14 33.6,28 33.6,19.599999999999998 0,19.599999999999998" fill="#2C6E66"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#2C6E66;border:1px solid #2C6E66;border-radius:14px;padding:32px">
+<h3 style="font-size:30px;font-weight:600;color:#F5F3EE">Asistente</h3>
+<p style="font-size:24px;line-height:1.35;color:#DCEAE7">Grok 4.7, router de intención, memoria y perfil</p>
+</div>
+<svg class="shape-arrow" aria-hidden="true" focusable="false" viewBox="0 0 56 28" width="56" height="28" style="width:56px;height:28px;flex:none"><polygon points="0,8.4 33.6,8.4 33.6,0 56,14 33.6,28 33.6,19.599999999999998 0,19.599999999999998" fill="#2C6E66"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:14px;padding:32px">
+<h3 style="font-size:30px;font-weight:600;color:#1A1F1E">Servidor MCP</h3>
+<p style="font-size:24px;line-height:1.35;color:#4B5553">Cinco herramientas; la escritura no es una de ellas</p>
+</div>
+<svg class="shape-arrow" aria-hidden="true" focusable="false" viewBox="0 0 56 28" width="56" height="28" style="width:56px;height:28px;flex:none"><polygon points="0,8.4 33.6,8.4 33.6,0 56,14 33.6,28 33.6,19.599999999999998 0,19.599999999999998" fill="#2C6E66"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:14px;padding:32px">
+<h3 style="font-size:30px;font-weight:600;color:#1A1F1E">PostgreSQL</h3>
+<p style="font-size:24px;line-height:1.35;color:#4B5553">Nómina sintética y corpus legal con pgvector</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#ECE8DF;border-radius:14px;padding:32px">
+<h3 style="font-size:30px;font-weight:600;color:#1A1F1E">Auditor por A2A</h3>
+<p style="font-size:24px;line-height:1.35;color:#4B5553">Agente independiente con Agent Card; veredicto por reglas</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#ECE8DF;border-radius:14px;padding:32px">
+<h3 style="font-size:30px;font-weight:600;color:#1A1F1E">Extractor propio</h3>
+<p style="font-size:24px;line-height:1.35;color:#4B5553">Qwen3.5-0.8B con QLoRA y DPO, en una GPU de 8 GB</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#ECE8DF;border-radius:14px;padding:32px">
+<h3 style="font-size:30px;font-weight:600;color:#1A1F1E">Observabilidad</h3>
+<p style="font-size:24px;line-height:1.35;color:#4B5553">OpenTelemetry y Arize Phoenix: cada turno es una traza</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8482">Relevo · SI7016 · 6</p>
+<aside class="notes">Arriba, el camino de una conversación: chat web en Next.js con el AI SDK de Vercel, el asistente con Grok 4.7 que decide la intención y usa herramientas, el servidor MCP propio y PostgreSQL, que guarda tanto la nómina sintética como el corpus legal con embeddings bge-m3 en pgvector. Importante: la herramienta de escritura no está expuesta al modelo. Abajo, las tres piezas de apoyo: el auditor como agente independiente por A2A, nuestro extractor afinado y la observabilidad con Phoenix.</aside>
+</section>
+<section class="slide" id="citas" data-n="7" role="group" aria-roledescription="lámina" aria-label="Lámina 7: Cada respuesta normativa dice de dónde sale" data-section="Lo que medimos en la entrega final" style="background:#F5F3EE;color:#1A1F1E;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:48px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2C6E66">Recuperación con citas</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#1A1F1E">Cada respuesta normativa dice de dónde sale</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:32px">
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:104px;font-weight:700;line-height:1;letter-spacing:-2px;color:#2C6E66">100 %</p>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">de los artículos esperados aparece entre los 5 primeros resultados</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:104px;font-weight:700;line-height:1;letter-spacing:-2px;color:#2C6E66">0,933</p>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">MRR: el artículo correcto casi siempre sale primero</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:104px;font-weight:700;line-height:1;letter-spacing:-2px;color:#2C6E66">0,926</p>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">fidelidad: afirmaciones respaldadas por la fuente, según el juez Grok 4.7</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:104px;font-weight:700;line-height:1;letter-spacing:-2px;color:#8A9391">12,5 %</p>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">recall con búsqueda solo por palabras: la parte semántica es la diferencia</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8482">Relevo · SI7016 · 7 · 20 preguntas doradas en español coloquial, búsqueda híbrida bge-m3 + léxica + RRF</p>
+<aside class="notes">La recuperación la medimos con 20 preguntas escritas como las haría un coordinador, no como dice la ley. Con búsqueda híbrida, el artículo esperado aparece siempre entre los cinco primeros y casi siempre de primero. Además, Grok 4.7 actuó como juez de fidelidad: el 92,6 % de las afirmaciones de las respuestas están respaldadas por el fragmento citado. El contraste importa: buscando solo por palabras, el recall cae a 12,5 %, porque la ley dice recargo nocturno y el usuario dice cuánto me pagan de noche.</aside>
+</section>
+<section class="slide" id="cifras" data-n="8" role="group" aria-roledescription="lámina" aria-label="Lámina 8: Cuatro cifras de la entrega final" style="background:#ECE8DF;color:#1A1F1E;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:48px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2C6E66">Lo que medimos</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#1A1F1E">Cuatro cifras de la entrega final</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:32px">
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:104px;font-weight:700;line-height:1;letter-spacing:-2px;color:#1A1F1E">20/20</p>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">escenarios con trampa resueltos por el auditor, incluido el festivo trasladado</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:104px;font-weight:700;line-height:1;letter-spacing:-2px;color:#1A1F1E">589</p>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">fragmentos indexados del CST y de las leyes 2101 y 2466</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:104px;font-weight:700;line-height:1;letter-spacing:-2px;color:#1A1F1E">156</p>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">pruebas automáticas en verde: 102 de TypeScript y 54 de Python</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:104px;font-weight:700;line-height:1;letter-spacing:-2px;color:#1A1F1E">75,8 %</p>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">de las tarjetas aprobadas sin corrección, en 120 decisiones simuladas</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6E7775">Relevo · SI7016 · 8 · Fuente: evaluacion/resultados/ del repositorio</p>
+<aside class="notes">Cuatro cifras más. El auditor acertó el veredicto en los 20 escenarios diseñados para engañarlo: empleados inexistentes, solapes, festivos trasladados, noches que terminan en domingo. El corpus legal tiene 589 fragmentos. El sistema tiene 156 pruebas automáticas. Y la tasa de aprobación sin corrección es 75,8 %, pero ojo: son decisiones simuladas, no de usuarios reales; eso lo retomamos en las limitaciones.</aside>
+</section>
+<section class="slide" id="innovacion" data-n="9" role="group" aria-roledescription="lámina" aria-label="Lámina 9: La aprobación humana como dato de entrenamiento" data-section="La innovación y la respuesta a la pregunta de investigación" style="background:#15211F;color:#EEF0EC;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:48px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#D99A45">La innovación</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#EEF0EC">La aprobación humana como dato de entrenamiento</h2>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#22302E;border:1px solid #3A4B48;border-radius:14px;padding:28px">
+<h3 style="font-size:30px;font-weight:600;color:#EEF0EC">Tarjeta</h3>
+<p style="font-size:24px;line-height:1.35;color:#A9BAB6">El agente propone</p>
+</div>
+<svg class="shape-arrow" aria-hidden="true" focusable="false" viewBox="0 0 48 24" width="48" height="24" style="width:48px;height:24px;flex:none"><polygon points="0,7.199999999999999 28.799999999999997,7.199999999999999 28.799999999999997,0 48,12 28.799999999999997,24 28.799999999999997,16.799999999999997 0,16.799999999999997" fill="#D99A45"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#22302E;border:1px solid #3A4B48;border-radius:14px;padding:28px">
+<h3 style="font-size:30px;font-weight:600;color:#EEF0EC">Decisión</h3>
+<p style="font-size:24px;line-height:1.35;color:#A9BAB6">Aprueba, corrige o rechaza</p>
+</div>
+<svg class="shape-arrow" aria-hidden="true" focusable="false" viewBox="0 0 48 24" width="48" height="24" style="width:48px;height:24px;flex:none"><polygon points="0,7.199999999999999 28.799999999999997,7.199999999999999 28.799999999999997,0 48,12 28.799999999999997,24 28.799999999999997,16.799999999999997 0,16.799999999999997" fill="#D99A45"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#22302E;border:1px solid #3A4B48;border-radius:14px;padding:28px">
+<h3 style="font-size:30px;font-weight:600;color:#EEF0EC">Par</h3>
+<p style="font-size:24px;line-height:1.35;color:#A9BAB6">Elegida contra rechazada</p>
+</div>
+<svg class="shape-arrow" aria-hidden="true" focusable="false" viewBox="0 0 48 24" width="48" height="24" style="width:48px;height:24px;flex:none"><polygon points="0,7.199999999999999 28.799999999999997,7.199999999999999 28.799999999999997,0 48,12 28.799999999999997,24 28.799999999999997,16.799999999999997 0,16.799999999999997" fill="#D99A45"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#22302E;border:1px solid #3A4B48;border-radius:14px;padding:28px">
+<h3 style="font-size:30px;font-weight:600;color:#EEF0EC">DPO</h3>
+<p style="font-size:24px;line-height:1.35;color:#A9BAB6">Ajuste incremental</p>
+</div>
+<svg class="shape-arrow" aria-hidden="true" focusable="false" viewBox="0 0 48 24" width="48" height="24" style="width:48px;height:24px;flex:none"><polygon points="0,7.199999999999999 28.799999999999997,7.199999999999999 28.799999999999997,0 48,12 28.799999999999997,24 28.799999999999997,16.799999999999997 0,16.799999999999997" fill="#D99A45"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#D99A45;border:1px solid #D99A45;border-radius:14px;padding:28px">
+<h3 style="font-size:30px;font-weight:600;color:#15211F">Extractor v2</h3>
+<p style="font-size:24px;line-height:1.35;color:#2A2416">Medido contra v1</p>
+</div>
+</div>
+<p style="width:1480px;font-size:34px;line-height:1.4;color:#DDE5E2">Cada aprobación, corrección o rechazo queda guardado. Nadie etiqueta aparte: la operación diaria produce los datos con los que el modelo propio mejora.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8FA29E">Relevo · SI7016 · 9</p>
+<aside class="notes">Este es el componente de innovación. En un sistema con humano en el lazo, cada tarjeta decidida es una señal de preferencia que normalmente se pierde. Relevo la guarda como par: la extracción que el humano eligió contra la que rechazó o corrigió. Con esos pares hacemos un ajuste DPO incremental sobre el adaptador LoRA, sin reentrenar desde cero, y medimos el antes y el después con el mismo conjunto de prueba congelado.</aside>
+</section>
+<section class="slide" id="extractor" data-n="10" role="group" aria-roledescription="lámina" aria-label="Lámina 10: El afinado mejora; el modelo de frontera sigue adelante" style="background:#F5F3EE;color:#1A1F1E;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2C6E66">Resultados del extractor</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#1A1F1E">El afinado mejora; el modelo de frontera sigue adelante</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:420px;font-size:28px;color:#4B5553">Qwen3.5-0.8B base</p>
+<div style="width:1056px;height:48px;display:flex;flex-direction:row;background:#E4E0D6;border-radius:8px;overflow:hidden">
+<div style="width:33px;height:48px;background:#9AA3A1"></div>
+</div>
+<p style="width:140px;font-size:32px;font-weight:700;color:#1A1F1E">3,1 %</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:420px;font-size:28px;color:#4B5553">+ QLoRA v1</p>
+<div style="width:1056px;height:48px;display:flex;flex-direction:row;background:#E4E0D6;border-radius:8px;overflow:hidden">
+<div style="width:812px;height:48px;background:#7FA8A1"></div>
+</div>
+<p style="width:140px;font-size:32px;font-weight:700;color:#1A1F1E">76,9 %</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:420px;font-size:28px;font-weight:600;color:#1A1F1E">+ DPO v2 (nuestro)</p>
+<div style="width:1056px;height:48px;display:flex;flex-direction:row;background:#E4E0D6;border-radius:8px;overflow:hidden">
+<div style="width:877px;height:48px;background:#2C6E66"></div>
+</div>
+<p style="width:140px;font-size:32px;font-weight:700;color:#2C6E66">83,1 %</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:420px;font-size:28px;font-weight:600;color:#1A1F1E">Grok 4.7 (frontera)</p>
+<div style="width:1056px;height:48px;display:flex;flex-direction:row;background:#E4E0D6;border-radius:8px;overflow:hidden">
+<div style="width:1040px;height:48px;background:#C9822B"></div>
+</div>
+<p style="width:140px;font-size:32px;font-weight:700;color:#8A5414">98,5 %</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.4;color:#4B5553">Exactitud total en 65 órdenes con plantillas nunca vistas. Intervalos al 95 %: v2 entre 73,9 y 90,8; Grok entre 95,4 y 100. No se solapan.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8482">Relevo · SI7016 · 10 · Fuente: evaluacion/extraccion.md, bootstrap de 1 000 remuestreos</p>
+<aside class="notes">Exactitud total: el JSON completo tiene que estar bien, no solo un campo. El modelo base de 0,8 mil millones de parámetros arranca en 3 %. Con QLoRA en nuestra GPU de 8 GB sube a 77 %, y con el ciclo DPO a 83 %. Grok 4.7, el modelo de frontera, llega a 98,5 %. Los intervalos de confianza no se solapan: la diferencia es real, no ruido.</aside>
+</section>
+<section class="slide" id="dpo" data-n="11" role="group" aria-roledescription="lámina" aria-label="Lámina 11: La señal humana corrigió justo lo que señalaba" style="background:#ECE8DF;color:#1A1F1E;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:48px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2C6E66">Dónde actuó el DPO</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#1A1F1E">La señal humana corrigió justo lo que señalaba</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:32px">
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:96px;font-weight:700;line-height:1;letter-spacing:-2px;color:#2C6E66">50 → 90 %</p>
+<p style="font-size:28px;line-height:1.4;color:#4B5553">acierto en la acción de las órdenes de quitar un turno</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:96px;font-weight:700;line-height:1;letter-spacing:-2px;color:#1A1F1E">29</p>
+<p style="font-size:28px;line-height:1.4;color:#4B5553">correcciones fueron toda la señal de entrenamiento</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;border-top:2px solid #1A1F1E;padding:32px 0 0 0">
+<p style="font-size:96px;font-weight:700;line-height:1;letter-spacing:-2px;color:#8A5414">84,6 %</p>
+<p style="font-size:28px;line-height:1.4;color:#4B5553">F1 de fechas, sin cambio: el calendario es la brecha que queda (Grok: 98,5 %)</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6E7775">Relevo · SI7016 · 11 · Decisiones simuladas sobre 120 órdenes nuevas; fuente: reporte E2 y evaluacion/extraccion.md</p>
+<aside class="notes">Lo interesante es dónde mejoró. Las correcciones simuladas señalaban sobre todo órdenes como «no le deje turno», que el modelo confundía con ausencias. Con solo 29 pares, el DPO subió el acierto de esa acción de 50 a 90 %. Lo que no movió fue el calendario: la F1 de fechas se quedó en 84,6 %, y ahí está casi toda la distancia con Grok. El aprendizaje fue dirigido: corrigió lo que la señal pedía, nada más.</aside>
+</section>
+<section class="slide" id="pregunta" data-n="12" role="group" aria-roledescription="lámina" aria-label="Lámina 12: ¿Puede un modelo pequeño, afinado con las correcciones de sus propios usuarios, alcanzar al modelo de frontera?" style="background:#15211F;color:#EEF0EC;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:48px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#D99A45">La pregunta de investigación</p>
+<h2 style="width:1560px;font-size:56px;font-weight:600;line-height:1.2;color:#C7D3D0">¿Puede un modelo pequeño, afinado con las correcciones de sus propios usuarios, alcanzar al modelo de frontera?</h2>
+</div>
+<h1 style="font-size:120px;font-weight:700;line-height:1.05;letter-spacing:-3px;color:#EEF0EC">Hoy no: le faltan 15 puntos.</h1>
+<p style="width:1500px;font-size:34px;line-height:1.45;color:#DDE5E2">Pero la brecha se cerró donde hubo señal, y el diseño con aprobación humana hace que esa señal salga gratis de la operación. Con más correcciones reales, un modelo que no saca los datos de la empresa se vuelve viable.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8FA29E">Relevo · SI7016 · 12</p>
+<aside class="notes">Nuestra pregunta prospectiva era si un modelo pequeño afinado con las correcciones de sus usuarios puede superar al de frontera en su tarea. La respuesta honesta, con estos datos, es que hoy no: Grok 4.7 le saca unos 15 puntos, sobre todo en fechas. Pero el experimento muestra el mecanismo funcionando: la señal humana movió exactamente lo que debía. Y como cada decisión de la tarjeta produce un par de entrenamiento sin costo extra, acumular esa señal es parte natural del uso. Con suficientes correcciones reales, un modelo local barato y que no saca los datos de la nómina de la empresa podría ser la opción correcta.</aside>
+</section>
+<section class="slide" id="gobernanza" data-n="13" role="group" aria-roledescription="lámina" aria-label="Lámina 13: El modelo nunca tiene la llave de escritura" data-section="Gobernanza, límites y cierre" style="background:#F5F3EE;color:#1A1F1E;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:48px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2C6E66">Gobernanza</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#1A1F1E">El modelo nunca tiene la llave de escritura</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:28px">
+<div style="display:flex;flex-direction:row;gap:24px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:16px;padding:36px">
+<svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="48" height="48" style="width:48px;height:48px;flex:none" fill="none" stroke="#2C6E66" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3"/><path d="M12 16.8v1.7"/></svg>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:32px;font-weight:600;color:#1A1F1E">Invariante probada</h3>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">La escritura no existe como herramienta del modelo, y un test lo verifica en cada cambio.</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row;gap:24px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:16px;padding:36px">
+<svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="48" height="48" style="width:48px;height:48px;flex:none" fill="none" stroke="#2C6E66" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.55 3.36 2.8 7.5 2.8s7.5-1.25 7.5-2.8v-13"/><path d="M4.5 12c0 1.55 3.36 2.8 7.5 2.8s7.5-1.25 7.5-2.8"/></svg>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:32px;font-weight:600;color:#1A1F1E">Roles de base de datos</h3>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">Los agentes leen; solo la transacción de una tarjeta aprobada escribe.</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row;gap:24px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:16px;padding:36px">
+<svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="48" height="48" style="width:48px;height:48px;flex:none" fill="none" stroke="#2C6E66" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12h4l3-8 5 16 3-8h4"/></svg>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:32px;font-weight:600;color:#1A1F1E">Trazas en Phoenix</h3>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">Cada turno, herramienta y veredicto del auditor queda registrado.</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row;gap:24px;background:#FFFEFB;border:1px solid #DEDAD0;border-radius:16px;padding:36px">
+<svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="48" height="48" style="width:48px;height:48px;flex:none" fill="none" stroke="#2C6E66" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l7.5 3v5.7c0 4.6-3.1 8.2-7.5 9.7-4.4-1.5-7.5-5.1-7.5-9.7V5.8z"/><path d="M8.8 12l2.2 2.2 4.2-4.4"/></svg>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:32px;font-weight:600;color:#1A1F1E">Guardrails</h3>
+<p style="font-size:26px;line-height:1.4;color:#4B5553">Citas obligatorias, alcance por equipo y límite de uso, cada uno con su prueba.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8482">Relevo · SI7016 · 13</p>
+<aside class="notes">La seguridad no depende de que el modelo se porte bien. La herramienta de escritura simplemente no existe para él, y una prueba automática lo verifica. En la base de datos, los agentes usan un rol de solo lectura; la escritura ocurre únicamente en la transacción que dispara una tarjeta aprobada. Todo queda trazado en Phoenix, y los guardrails de citas, alcance por equipo y límite de uso tienen pruebas propias.</aside>
+</section>
+<section class="slide" id="limitaciones" data-n="14" role="group" aria-roledescription="lámina" aria-label="Lámina 14: Limitaciones y próximos pasos" style="background:#ECE8DF;color:#1A1F1E;font-family:'DM Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2C6E66">Lo que falta</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#1A1F1E">Limitaciones y próximos pasos</h2>
+</div>
+<div style="display:flex;flex-direction:column">
+<div style="display:flex;flex-direction:row;gap:48px;border-top:2px solid #1A1F1E;padding:28px 0">
+<h3 style="width:520px;font-size:32px;font-weight:600;color:#1A1F1E">Usuarios reales</h3>
+<p style="flex:1;font-size:28px;line-height:1.4;color:#4B5553">Las 120 decisiones de entrenamiento son simuladas. El protocolo de sesiones ya está listo; faltan las sesiones.</p>
+</div>
+<div style="display:flex;flex-direction:row;gap:48px;border-top:1px solid #C9C4B8;padding:28px 0">
+<h3 style="width:520px;font-size:32px;font-weight:600;color:#1A1F1E">Fechas absolutas</h3>
+<p style="flex:1;font-size:28px;line-height:1.4;color:#4B5553">«El 12 de octubre» sigue fallando en el extractor propio: es la brecha principal con el modelo de frontera.</p>
+</div>
+<div style="display:flex;flex-direction:row;gap:48px;border-top:1px solid #C9C4B8;padding:28px 0">
+<h3 style="width:520px;font-size:32px;font-weight:600;color:#1A1F1E">Latencia local</h3>
+<p style="flex:1;font-size:28px;line-height:1.4;color:#4B5553">Unos 11 segundos por extracción en Windows sin kernels optimizados; en Linux con GPU bajaría.</p>
+</div>
+<div style="display:flex;flex-direction:row;gap:48px;border-top:1px solid #C9C4B8;border-bottom:1px solid #C9C4B8;padding:28px 0">
+<h3 style="width:520px;font-size:32px;font-weight:600;color:#1A1F1E">Despliegue</h3>
+<p style="flex:1;font-size:28px;line-height:1.4;color:#4B5553">Hoy corre en local con Docker; el siguiente paso es la nube con la base y Phoenix gestionados.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6E7775">Relevo · SI7016 · 14</p>
+<aside class="notes">Somos transparentes con lo que falta. La señal de entrenamiento es simulada; el siguiente paso es correr las sesiones con usuarios con el protocolo que ya preparamos, y esas decisiones serán pares humanos reales. Las fechas absolutas son el punto débil del extractor propio. La latencia local es alta por limitaciones de los kernels en Windows. Y el despliegue en la nube queda como trabajo futuro.</aside>
+</section>
+<section class="slide" id="cierre" data-n="15" role="group" aria-roledescription="lámina" aria-label="Lámina 15: Gracias" style="background:#15211F;color:#EEF0EC;font-family:'DM Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between">
+
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#D99A45">Relevo · SI7016 · EAFIT</p>
+<div style="display:flex;flex-direction:column;gap:32px">
+<h1 style="font-size:160px;font-weight:700;line-height:1;letter-spacing:-4px;color:#EEF0EC">Gracias</h1>
+<p style="width:1320px;font-size:44px;line-height:1.3;color:#DDE5E2">Consultar es autónomo; escribir exige la aprobación de una persona. Y cada aprobación enseña.</p>
+</div>
+<div style="display:flex;flex-direction:row;justify-content:space-between;align-items:end">
+<p style="font-size:28px;color:#A9BAB6">Isabel Jurado Jaramillo · Alejandro Silva Zuluaga · David Botero Londoño</p>
+<p style="font-size:28px;color:#A9BAB6">github.com/david-botero10/proyecto-final-nlp-eafit</p>
+</div>
+<aside class="notes">Cerramos con el principio que guió todo el proyecto: el agente consulta con autonomía, pero nunca escribe sin la aprobación de una persona, y cada una de esas aprobaciones se convierte en un dato que mejora el modelo propio. El código, el informe y las evaluaciones están en el repositorio. Quedamos atentos a sus preguntas.</aside>
+</section>
+</main>
+</div>
+<div id="progress" aria-hidden="true"><i></i></div>
+<div id="counter" aria-live="off">1 / 15</div>
+<section id="notes" role="region" aria-label="Notas del orador">
+<h2 id="notes-title">Lámina 1/15</h2>
+<p id="notes-text"></p>
+</section>
+<div id="help" role="dialog" aria-modal="true" aria-label="Atajos de teclado">
+<div class="box">
+<h2>Atajos de teclado</h2>
+<dl>
+<dt><kbd>→</kbd> <kbd>Espacio</kbd> <kbd>AvPág</kbd></dt><dd>Lámina siguiente</dd>
+<dt><kbd>←</kbd> <kbd>RePág</kbd></dt><dd>Lámina anterior</dd>
+<dt><kbd>Inicio</kbd> / <kbd>Fin</kbd></dt><dd>Primera / última lámina</dd>
+<dt><kbd>N</kbd></dt><dd>Notas del orador</dd>
+<dt><kbd>F</kbd></dt><dd>Pantalla completa</dd>
+<dt><kbd>C</kbd></dt><dd>Mostrar u ocultar contador y barra</dd>
+<dt><kbd>?</kbd></dt><dd>Esta ayuda</dd>
+<dt>Clic / deslizar</dt><dd>Mitad derecha o izquierda; deslizar en pantallas táctiles</dd>
+</dl>
+<p class="close">Esc o clic para cerrar. Imprimir → Guardar como PDF da una lámina por página.</p>
+</div>
+</div>
 <script>
-  const renderer = new marked.Renderer();
-  const codigoBase = renderer.code.bind(renderer);
-  renderer.code = function (bloque, infostring, escaped) {
-    const esToken = typeof bloque === "object" && bloque !== null;
-    const lang = ((esToken ? bloque.lang : infostring) || "").trim();
-    const texto = esToken ? bloque.text : bloque;
-    if (lang === "mermaid") {
-      return '<div class="mermaid">' + texto
-        .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "</div>";
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length, cur = 0;
+  var stage = document.getElementById('stage');
+  var viewport = document.getElementById('viewport');
+  var notes = document.getElementById('notes');
+  var notesTitle = document.getElementById('notes-title');
+  var notesText = document.getElementById('notes-text');
+  var counter = document.getElementById('counter');
+  var bar = document.querySelector('#progress > i');
+  var help = document.getElementById('help');
+
+  function fit() {
+    var availH = window.innerHeight - (notes.classList.contains('open') ? notes.offsetHeight : 0);
+    var s = Math.min(window.innerWidth / 1920, availH / 1080);
+    var x = (window.innerWidth - 1920 * s) / 2;
+    var y = (availH - 1080 * s) / 2;
+    stage.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
+  }
+
+  function hashIndex() {
+    var n = parseInt((location.hash || '').replace('#', ''), 10);
+    if (isNaN(n)) return 0;
+    return Math.max(0, Math.min(total - 1, n - 1));
+  }
+
+  function show(i, fromHash) {
+    cur = Math.max(0, Math.min(total - 1, i));
+    slides.forEach(function (el, k) {
+      var on = k === cur;
+      el.classList.toggle('active', on);
+      el.setAttribute('aria-hidden', on ? 'false' : 'true');
+    });
+    counter.textContent = (cur + 1) + ' / ' + total;
+    bar.style.width = ((cur + 1) / total * 100) + '%';
+    var aside = slides[cur].querySelector('aside.notes');
+    notesTitle.textContent = 'Lámina ' + (cur + 1) + '/' + total;
+    notesText.textContent = aside ? aside.textContent.trim() : '';
+    if (!fromHash && history.replaceState) {
+      history.replaceState(null, '', '#' + (cur + 1));
     }
-    return codigoBase(bloque, infostring, escaped);
-  };
-  document.querySelectorAll("script.fuente-slide").forEach((nodo) => {
-    const html = marked.parse(nodo.textContent, { renderer, gfm: true });
-    const destino = document.createElement("div");
-    destino.innerHTML = html;
-    nodo.replaceWith(destino);
+  }
+
+  function next() { show(cur + 1); }
+  function prev() { show(cur - 1); }
+
+  function toggleNotes() { notes.classList.toggle('open'); fit(); }
+  function toggleChrome() { document.body.classList.toggle('hide-chrome'); }
+  function toggleHelp(force) {
+    var open = typeof force === 'boolean' ? force : !help.classList.contains('open');
+    help.classList.toggle('open', open);
+  }
+  function toggleFull() {
+    var d = document, el = d.documentElement;
+    if (!d.fullscreenElement && el.requestFullscreen) {
+      el.requestFullscreen().catch(function () {});
+    } else if (d.fullscreenElement && d.exitFullscreen) {
+      d.exitFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (help.classList.contains('open')) {
+      if (k === 'Escape' || k === '?') { toggleHelp(false); e.preventDefault(); }
+      return;
+    }
+    switch (k) {
+      case 'ArrowRight': case 'PageDown': case ' ': case 'Spacebar': next(); break;
+      case 'ArrowLeft': case 'PageUp': prev(); break;
+      case 'Home': show(0); break;
+      case 'End': show(total - 1); break;
+      case 'n': case 'N': toggleNotes(); break;
+      case 'f': case 'F': toggleFull(); break;
+      case 'c': case 'C': toggleChrome(); break;
+      case '?': toggleHelp(true); break;
+      default: return;
+    }
+    e.preventDefault();
   });
-  mermaid.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "loose" });
-  Reveal.initialize({
-    hash: true,
-    slideNumber: true,
-    plugins: [RevealNotes]
-  }).then(() => mermaid.run({ querySelector: ".mermaid" }));
+
+  help.addEventListener('click', function () { toggleHelp(false); });
+
+  viewport.addEventListener('click', function (e) {
+    if (e.clientX < window.innerWidth / 2) prev(); else next();
+  });
+
+  var tx = null, ty = null;
+  viewport.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) { tx = null; return; }
+    tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+  }, { passive: true });
+  viewport.addEventListener('touchend', function (e) {
+    if (tx === null) return;
+    var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+    tx = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) next(); else prev();
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', function () { show(hashIndex(), true); });
+  document.addEventListener('fullscreenchange', function () {
+    document.body.classList.toggle('hide-chrome', !!document.fullscreenElement);
+    fit();
+  });
+
+  fit();
+  show(hashIndex(), true);
+})();
 </script>
 </body>
 </html>
