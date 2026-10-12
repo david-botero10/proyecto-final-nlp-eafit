@@ -62,6 +62,9 @@ web-only deploy would have) scores recall@5 12.5 % / fidelity 0.188 vs hybrid
 - Smoke on the cloud URL (2026-10-12 ~13:30): Q1 hybrid art. 168 + 160 in 38.7 s; Q2 3 people scoped to team in 12.1 s; Q3 card with A2A auditor «observaciones» art. 179 in 16.2 s; Q4 approval wrote origen=tarjeta row + pair in 0.3 s. Demo data reset (120/0/0).
 - Pending: GPU extractor on Modal needs the user's decision on registering a card; slide/script must reflect what is deployed.
 
+- UI redesign merged (dab0424, 0c580ac, fix 7th commit; merge d5478f2): sidebar with grouped history/search/delete, welcome with the 4 demo suggestions, tool-activity lane, markdown answers with citation chips, card states. Deps: lucide-react 1.48.0, react-markdown 10.1.0, remark-gfm 4.0.1. No migration. Gates: vitest 141 passed, build exit 0. Deployed to production; cloud re-check: Q1 hybrid 19.6 s, Q2 8.7 s, Q3 17.8 s (auditor «observaciones»), Q4 approval wrote origen=tarjeta row; history API: list own only, other user 404 on delete, delete own 200. Garbled test conversations (U+FFFD) deleted locally and on Neon (4 each). Demo data reset (120/0/0).
+- Incident: main checkout `.venv` found empty (mtime 13:40, cause not identified) → recreated from requirements-dev.txt; `npm ci` blocked by the local auditor's esbuild.exe → auditor stopped, reinstalled, restarted on :8641. Local `next dev` (plan B) is down: start it with `npm run dev` before rehearsing.
+
 ## Next step
 Launch T1 and T2 in parallel worktrees; user creates Vercel, Neon and Modal
 accounts.
