@@ -24,6 +24,22 @@ import {
   type Veredicto,
 } from "@/lib/tipos";
 
+const PROVEEDOR_ETIQUETA: Record<"xai" | "lora", string> = {
+  xai: "Interpretó Grok 4.7",
+  lora: "Interpretó el extractor propio",
+};
+
+// «cst_pr006» → «CST», «ley_2466_2025» → «Ley 2466 de 2025».
+function etiquetaNorma(fuente: string, articulo: string): string {
+  const ley = /^ley_(\d+)_(\d{4})$/.exec(fuente);
+  const origen = fuente.startsWith("cst")
+    ? "CST"
+    : ley
+      ? `Ley ${ley[1]} de ${ley[2]}`
+      : fuente;
+  return `art. ${articulo} (${origen})`;
+}
+
 const TURNO_ETIQUETA: Record<Turno, string> = {
   M: "Mañana",
   T: "Tarde",
@@ -264,7 +280,7 @@ export function TarjetaPropuesta({
           <p className="mt-1 text-xs text-muted">
             {propuesta.extraccion.justificacion ?? "Sin justificación"}
             {" · "}
-            {propuesta.extraccion.proveedor}
+            {PROVEEDOR_ETIQUETA[propuesta.extraccion.proveedor]}
           </p>
         </section>
 
@@ -500,7 +516,7 @@ export function TarjetaPropuesta({
                 <p className="mt-2 text-xs text-muted">
                   Normas citadas:{" "}
                   {veredicto.normas_citadas
-                    .map((norma) => `${norma.fuente} ${norma.articulo}`)
+                    .map((norma) => etiquetaNorma(norma.fuente, norma.articulo))
                     .join(" · ")}
                 </p>
               ) : null}
