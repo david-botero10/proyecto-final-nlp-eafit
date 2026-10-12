@@ -63,7 +63,7 @@ MCP habla con los datos. A2A habla entre agentes.
 
 ```mermaid
 flowchart LR
-    UI["Chat"] --> AS["Grok 4.6"]
+    UI["Chat"] --> AS["Grok 4.7"]
     AS --> MCP["MCP lectura y propuesta"]
     AS --> AUD["Auditor A2A"]
     MCP --> PG["PostgreSQL + pgvector"]
@@ -111,7 +111,7 @@ La UI numera Fuentes con enlace al Senado.
 
 ### Notas del orador
 
-Fuente: reporte C1 para el humo, reporte F1 para las 20 preguntas. En léxico puro (reporte B2) «recargo nocturno» abría por el art. 161, y «trabajo nocturno porcentaje» no devolvía nada. Digan esa diferencia. F1, modo híbrido, 20 de 20: recall@3 97,50 %, recall@5 100 %, recall@8 100 %, MRR 0,933. El juez de fidelidad sigue pendiente: no había clave de xAI. El reporte F1 no trae la corrida léxica de esas 20 preguntas.
+Fuente: reporte C1 para el humo, reporte F1 para las 20 preguntas. En léxico puro (reporte B2) «recargo nocturno» abría por el art. 161, y «trabajo nocturno porcentaje» no devolvía nada. Digan esa diferencia. F1, modo híbrido, 20 de 20: recall@3 97,50 %, recall@5 100 %, recall@8 100 %, MRR 0,933. El juez de fidelidad (Grok 4.7, `evaluacion/citas.md`): media 0,926; 16 de 20 preguntas en 1,000; las más bajas son c02 (0,500), c03 (0,600), c04 (0,667) y c12 (0,750), y en esas el artículo ya estaba en el top 3. El juez es el mismo modelo del asistente: díganlo. El reporte F1 no trae la corrida léxica de esas 20 preguntas.
 
 ---
 
@@ -148,7 +148,7 @@ Gana en todos los campos frente al base. En v1, la acción sigue siendo el peor 
 
 ### Notas del orador
 
-Fuente: reporte C3. El 3 % y el 77 % de la spec son ese 3,08 y ese 76,92, redondeados. Es contra el base, no contra Grok: no había clave. Pico de VRAM 2 871 MiB en una 4060 de 8 GB. El error que queda en C3: «no le deje turno el 12 de octubre» salió como ausencia y con otra fecha. v2 sube la acción a 96,92 %; el detalle y el intervalo están en la diapositiva de DPO.
+Fuente: reporte C3. El 3 % y el 77 % de la spec son ese 3,08 y ese 76,92, redondeados. C3 compara contra el base. La comparación contra Grok 4.7 (98,46 %) está en la diapositiva del ciclo DPO y en Evaluación. Pico de VRAM 2 871 MiB en una 4060 de 8 GB. El error que queda en C3: «no le deje turno el 12 de octubre» salió como ausencia y con otra fecha. v2 sube la acción a 96,92 %; el detalle y el intervalo están en la diapositiva de DPO.
 
 ---
 
@@ -163,10 +163,11 @@ Hoy, en la base local, sin re-sembrar:
 - 0 decisiones de una persona
 - Exactitud total: 76,92 % → 83,08 % (+6,15 pp)
 - IC 95 %: v1 [66,15 %, 87,69 %], v2 [73,85 %, 90,77 %]
+- Grok 4.7 en el mismo test: 98,46 % [95,38 %, 100,00 %]. No se solapa con v2
 
 ### Notas del orador
 
-Fuente: reporte E2. La pregunta de la propuesta: ¿un modelo pequeño, afinado con las correcciones de sus usuarios, puede superar al de frontera en esta tarea, sin sacar los datos de la organización? Hoy supera a su base y el DPO suma 6,15 puntos, con intervalos que se solapan. Las 91 aprobaciones no son pares DPO: `rechazada` va null. La señal útil son las 29 correcciones, y son simuladas. El DPO corrigió la acción `quitar` (50 % → 90 %), no el calendario. Loss 0,693 → 0,586, `rewards/accuracies` 0,6875, 206,434 s, pico 8 428,99 MiB. Grok sigue pendiente.
+Fuente: reporte E2. La pregunta de la propuesta: ¿un modelo pequeño, afinado con las correcciones de sus usuarios, puede superar al de frontera en esta tarea, sin sacar los datos de la organización? Hoy supera a su base y el DPO suma 6,15 puntos sobre v1, con intervalos que se solapan. Frente a Grok 4.7 no: 98,46 % contra 83,08 %, intervalos que no se solapan (`evaluacion/extraccion.md`). La brecha restante es sobre todo de fechas (F1 84,62 % contra 98,46 %). Las 91 aprobaciones no son pares DPO: `rechazada` va null. La señal útil son las 29 correcciones, y son simuladas. El DPO corrigió la acción `quitar` (50 % → 90 %), no el calendario. Loss 0,693 → 0,586, `rewards/accuracies` 0,6875, 206,434 s, pico 8 428,99 MiB. El modelo pequeño solo es viable por costo y privacidad con más correcciones, y la tarjeta hace barato acumularlas. No exageren en ninguna dirección: no alcanza a la frontera hoy, y no se midió cuánto subiría con más pares.
 
 ---
 
@@ -189,8 +190,8 @@ Fuente: reporte E1. Si Phoenix está caído el chat sigue y no escupe el error e
 
 | Métrica | Qué hay hoy | Qué falta |
 |---|---|---|
-| Extracción | 3,08 % → 76,92 % → 83,08 %, n = 65. IC de v2 [73,85 %, 90,77 %] | Grok |
-| Citas | Híbrido: recall@3 97,50 %, @5 y @8 100 %, MRR 0,933 | Juez LLM |
+| Extracción | 3,08 % → 76,92 % → 83,08 %, n = 65. IC de v2 [73,85 %, 90,77 %]. Grok 4.7: 98,46 % [95,38 %, 100,00 %] | Más correcciones de personas |
+| Citas | Híbrido: recall@3 97,50 %, @5 y @8 100 %, MRR 0,933. Fidelidad del juez (Grok 4.7): 0,926 | Juez independiente del asistente |
 | Auditor | 20/20. Precisión 100 %. Matriz diagonal | Rotulado humano independiente |
 | Aprobación | Simulador 75,83 % (91/120). Humanos: 0 | Sesiones |
 
@@ -198,7 +199,7 @@ Pruebas con usuarios: protocolo escrito, sesiones pendientes.
 
 ### Notas del orador
 
-No conviertan 91/120 en «le atinamos al 76 % de los usuarios». Es el simulador contra la etiqueta del generador: 75,83 %. Informe §8. Los intervalos de v1 y v2 se solapan. El protocolo está en `evaluacion/PROTOCOLO_USUARIOS.md`.
+No conviertan 91/120 en «le atinamos al 76 % de los usuarios». Es el simulador contra la etiqueta del generador: 75,83 %. Informe §8. Los intervalos de v1 y v2 se solapan; los de v2 y Grok 4.7 no. Fuentes: `evaluacion/extraccion.md` y `evaluacion/citas.md`. El protocolo está en `evaluacion/PROTOCOLO_USUARIOS.md`.
 
 ---
 
@@ -222,11 +223,11 @@ Hay un camino de la orden coloquial a una fila con `origen = 'tarjeta'`, con un 
 
 El extractor pequeño aprende la tarea: 3,08 % → 76,92 % → 83,08 % contra su base. Los intervalos de v1 y v2 se solapan.
 
-Falta medirlo contra Grok y faltan las sesiones con personas.
+Contra Grok 4.7 todavía no llega (83,08 % frente a 98,46 %), y faltan las sesiones con personas que den más señal de corrección.
 
 ### Notas del orador
 
-Cierren con esas dos ausencias y paren. El delta de DPO ya está dicho: corrigió la acción, no las fechas. El informe, la presentación y el guion están en `informe/`. Licencia MIT.
+Cierren con la brecha medida (unos 15 pp, sobre todo fechas) y con las sesiones que faltan, y paren. El delta de DPO ya está dicho: corrigió la acción, no las fechas. El informe, la presentación y el guion están en `informe/`. Licencia MIT.
 
 ---
 
