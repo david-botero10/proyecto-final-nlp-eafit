@@ -554,6 +554,11 @@ Tercero, la latencia local: unos 11 segundos por extracción en Windows sin kern
 1. **¿Por qué no hicieron las pruebas con usuarios?** El tiempo de entrega; el protocolo (guion de 15 minutos, cuestionario Likert, plantilla CSV) está en `evaluacion/PROTOCOLO_USUARIOS.md`. Es el primer paso pendiente.
 2. **¿Cuál sería su prioridad si tuvieran dos semanas?** Sesiones con 5–10 coordinadores reales para obtener pares humanos, un normalizador determinista de fechas, y una prueba pareada para v1 frente a v2.
 3. **¿Está desplegada?** No. Corre en local con Docker; no afirmamos otra cosa.
+4. **¿Por qué no la desplegaron en Vercel, Hugging Face Spaces o Modal, si lo dijeron en la propuesta?** Respuesta base (30 s): «Fue una decisión de prioridades. Invertimos el tiempo en lo que el curso evalúa con más peso: calidad técnica y una evaluación rigurosa. El chat sí cabe en Vercel, pero los modelos propios (bge-m3 y el extractor) necesitan 2–3 GB y en los planes gratuitos no hay dónde correrlos sin pagar; desplegar solo lo que cabe era mostrar una versión recortada. La arquitectura ya está lista: cada servicio se conecta por variables de entorno (`DATABASE_URL`, `EMBED_SERVICE_URL`, `AUDITOR_URL`, `EXTRACTOR_URL`), así que desplegar es configuración, no reescritura.» Si insisten en que lo prometieron: «Es cierto, lo propusimos y no lo cumplimos; está en las limitaciones del informe.»
+   - **Vercel:** el chat y el servidor MCP caben; antes de publicar hacía falta control de acceso, porque una URL pública expone la clave de xAI a que cualquiera consuma el saldo.
+   - **Hugging Face Spaces:** era el plan para los modelos, pero en 2026 cambiaron las condiciones de la CPU gratuita para cuentas nuevas (lo reportan usuarios del foro; no hay anuncio oficial). No digan que lo intentaron: no se intentó.
+   - **Modal:** reconózcanlo: sí habría servido. Da créditos mensuales gratuitos y cobra por segundo de GPU; es la plataforma que elegiríamos para los modelos. No la usamos porque requería migrar los servicios a su formato y priorizamos la evaluación.
+   - **No digan:** «no sabíamos cómo» ni «no se podía gratis» (Modal lo desmiente).
 
 ### Si algo falla
 
