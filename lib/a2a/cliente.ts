@@ -16,6 +16,12 @@ import {
 const URL_POR_DEFECTO = "http://127.0.0.1:8641";
 const TIMEOUT_POR_DEFECTO_MS = 8000;
 
+/** Cabecera con el secreto compartido; solo se envía si hay AUDITOR_TOKEN. */
+function cabecerasAuditor(base: Record<string, string> = {}): Record<string, string> {
+  const token = process.env.AUDITOR_TOKEN?.trim();
+  return token ? { ...base, "x-auditor-token": token } : base;
+}
+
 const tarjetas = new Map<string, AgentCard>();
 
 export function urlAuditor(): string {
@@ -60,7 +66,10 @@ async function obtenerTarjeta(
   if (cacheada) {
     return cacheada;
   }
-  const respuesta = await fetch(`${base}/.well-known/agent.json`, { signal });
+  const respuesta = await fetch(`${base}/.well-known/agent.json`, {
+    headers: cabecerasAuditor(),
+    signal,
+  });
   if (!respuesta.ok) {
     return null;
   }
@@ -86,7 +95,7 @@ export async function auditarSolicitud(
     const id = crypto.randomUUID();
     const respuesta = await fetch(urlA2a(tarjeta), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: cabecerasAuditor({ "Content-Type": "application/json" }),
       body: JSON.stringify({
         jsonrpc: "2.0",
         id,
