@@ -31,6 +31,16 @@
       "f1_fechas": 0.8461538461538461,
       "json_valido": 1.0,
       "exactitud_total": 0.8307692307692308
+    },
+    "grok": {
+      "n": 65,
+      "exactitud_empleado": 1.0,
+      "exactitud_turno": 1.0,
+      "exactitud_accion": 1.0,
+      "exactitud_justificacion": 1.0,
+      "f1_fechas": 0.9846153846153847,
+      "json_valido": 1.0,
+      "exactitud_total": 0.9846153846153847
     }
   },
   "intervalos": {
@@ -52,6 +62,13 @@
       "media": 0.8307692307692308,
       "bajo": 0.7384615384615385,
       "alto": 0.9076923076923077,
+      "remuestreos": 1000,
+      "semilla": 42
+    },
+    "grok": {
+      "media": 0.9846153846153847,
+      "bajo": 0.9538461538461539,
+      "alto": 1.0,
       "remuestreos": 1000,
       "semilla": 42
     }
@@ -87,6 +104,16 @@
         "f1_fechas": 0.9122807017543859,
         "json_valido": 1.0,
         "exactitud_total": 0.8947368421052632
+      },
+      "grok": {
+        "n": 57,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 1.0,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 1.0,
+        "json_valido": 1.0,
+        "exactitud_total": 1.0
       }
     },
     "absoluta": {
@@ -119,6 +146,16 @@
         "f1_fechas": 0.0,
         "json_valido": 1.0,
         "exactitud_total": 0.0
+      },
+      "grok": {
+        "n": 5,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 1.0,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 0.8,
+        "json_valido": 1.0,
+        "exactitud_total": 0.8
       }
     },
     "sin_fecha": {
@@ -143,6 +180,16 @@
         "exactitud_total": 1.0
       },
       "v2": {
+        "n": 3,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 1.0,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 1.0,
+        "json_valido": 1.0,
+        "exactitud_total": 1.0
+      },
+      "grok": {
         "n": 3,
         "exactitud_empleado": 1.0,
         "exactitud_turno": 1.0,
@@ -183,6 +230,16 @@
         "f1_fechas": 0.75,
         "json_valido": 1.0,
         "exactitud_total": 0.7
+      },
+      "grok": {
+        "n": 20,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 1.0,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 0.95,
+        "json_valido": 1.0,
+        "exactitud_total": 0.95
       }
     },
     "resto": {
@@ -215,10 +272,20 @@
         "f1_fechas": 0.8888888888888888,
         "json_valido": 1.0,
         "exactitud_total": 0.8888888888888888
+      },
+      "grok": {
+        "n": 45,
+        "exactitud_empleado": 1.0,
+        "exactitud_turno": 1.0,
+        "exactitud_accion": 1.0,
+        "exactitud_justificacion": 1.0,
+        "f1_fechas": 1.0,
+        "json_valido": 1.0,
+        "exactitud_total": 1.0
       }
     }
   },
-  "grok_pendiente": true,
+  "grok_pendiente": false,
   "campos": [
     "empleado",
     "turno",

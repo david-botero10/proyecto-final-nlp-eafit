@@ -1,12 +1,12 @@
 | métrica | base | v1 | v2 | delta v1→v2 | Grok |
 |---|---:|---:|---:|---:|---:|
-| empleado | 80.00 % | 100.00 % | 100.00 % | +0.00 pp | pendiente |
-| turno | 36.92 % | 100.00 % | 100.00 % | +0.00 pp | pendiente |
-| accion | 55.38 % | 84.62 % | 96.92 % | +12.31 pp | pendiente |
-| justificacion | 53.85 % | 98.46 % | 98.46 % | +0.00 pp | pendiente |
-| fechas (F1) | 19.18 % | 84.62 % | 84.62 % | +0.00 pp | pendiente |
-| JSON válido | 90.77 % | 100.00 % | 100.00 % | +0.00 pp | pendiente |
-| exactitud total | 3.08 % | 76.92 % | 83.08 % | +6.15 pp | pendiente |
+| empleado | 80.00 % | 100.00 % | 100.00 % | +0.00 pp | 100.00 % |
+| turno | 36.92 % | 100.00 % | 100.00 % | +0.00 pp | 100.00 % |
+| accion | 55.38 % | 84.62 % | 96.92 % | +12.31 pp | 100.00 % |
+| justificacion | 53.85 % | 98.46 % | 98.46 % | +0.00 pp | 100.00 % |
+| fechas (F1) | 19.18 % | 84.62 % | 84.62 % | +0.00 pp | 98.46 % |
+| JSON válido | 90.77 % | 100.00 % | 100.00 % | +0.00 pp | 100.00 % |
+| exactitud total | 3.08 % | 76.92 % | 83.08 % | +6.15 pp | 98.46 % |
 
 ## Intervalos de la exactitud total
 
@@ -15,7 +15,7 @@
 | base | 3.08 % | [0.00 %, 7.69 %] |
 | v1 | 76.92 % | [66.15 %, 87.69 %] |
 | v2 | 83.08 % | [73.85 %, 90.77 %] |
-| Grok | pendiente | pendiente |
+| Grok | 98.46 % | [95.38 %, 100.00 %] |
 
 Remuestreos: 1000. El intervalo es el percentil 2.5–97.5 de la media.
 
@@ -62,5 +62,3 @@ Remuestreos: 1000. El intervalo es el percentil 2.5–97.5 de la media.
 ## Lectura
 
 v2 sube la exactitud total en el test congelado.
-
-Sin XAI_API_KEY: la columna Grok queda pendiente. No es un error de gate.
