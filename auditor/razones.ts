@@ -2,7 +2,7 @@ import { generateText } from "ai";
 import { createXai } from "@ai-sdk/xai";
 import type { Veredicto } from "../lib/tipos";
 
-const MODELO_POR_DEFECTO = "grok-4.6";
+const MODELO_POR_DEFECTO = "grok-4.7";
 
 function debeRedactar(): boolean {
   if (process.env.VITEST) {

@@ -19,12 +19,12 @@ Licencia: [MIT](LICENSE).
 | Resultado | Cifra | De dónde sale |
 |---|---|---|
 | Exactitud total del extractor, test n = 65 | 3,08 % base → 76,92 % QLoRA v1 → 83,08 % DPO v2 (+6,15 pp). IC 95 % de v2 [73,85 %, 90,77 %]; se solapa con el de v1 | [`docs/orca/reports/E2_DPO_REPORT.md`](docs/orca/reports/E2_DPO_REPORT.md), [`evaluacion/resultados/extraccion.json`](evaluacion/resultados/extraccion.json) |
-| Misma tabla contra Grok | Pendiente: no había `XAI_API_KEY` en C3, E2 ni F1 | C3, E2, F1 |
+| Misma tabla contra Grok 4.7 | 98,46 % [95,38 %, 100,00 %]; acción, empleado, turno, justificación y JSON válido en 100 %; fechas (F1) 98,46 %. Los intervalos de v2 y Grok no se solapan: hoy la frontera gana | [`evaluacion/extraccion.md`](evaluacion/extraccion.md), [`evaluacion/resultados/extraccion.json`](evaluacion/resultados/extraccion.json) |
 | Nómina sintética, semilla 42 | 40 empleados, 1 837 asignaciones, 30 ausencias, 0 solapes | [`docs/orca/reports/A2_DB_REPORT.md`](docs/orca/reports/A2_DB_REPORT.md) |
 | Corpus descargado | 20 documentos | [`docs/orca/reports/A3_CORPUS_REPORT.md`](docs/orca/reports/A3_CORPUS_REPORT.md) |
 | Corpus insertado en B2 | 18 documentos, 497 chunks (histórico) | [`docs/orca/reports/B2_INTEGRACION_REPORT.md`](docs/orca/reports/B2_INTEGRACION_REPORT.md) |
 | Corpus vigente | 20 documentos, 589 chunks | Commit `a21a6d6` (BOM de Función Pública) |
-| Citas, 20 preguntas, modo híbrido | recall@3 97,50 %, @5 100 %, @8 100 %, MRR 0,933. Juez LLM pendiente | [`docs/orca/reports/F1_EVALUACION_REPORT.md`](docs/orca/reports/F1_EVALUACION_REPORT.md) |
+| Citas, 20 preguntas, modo híbrido | recall@3 97,50 %, @5 100 %, @8 100 %, MRR 0,933. Fidelidad media 0,926 con juez Grok 4.7 (16 de 20 en 1,000; mínimo 0,500 en c02) | [`evaluacion/citas.md`](evaluacion/citas.md), [`evaluacion/resultados/citas.json`](evaluacion/resultados/citas.json), [`docs/orca/reports/F1_EVALUACION_REPORT.md`](docs/orca/reports/F1_EVALUACION_REPORT.md) |
 | «Recargo nocturno», híbrido, k = 8 | art. 169, art. 168, art. 161 en 322 ms | [`docs/orca/reports/C1_CHAT_RAG_REPORT.md`](docs/orca/reports/C1_CHAT_RAG_REPORT.md) |
 | Auditor | 20/20. Precisión 100 % por clase. Matriz diagonal | [`evaluacion/resultados/auditor.json`](evaluacion/resultados/auditor.json) |
 | Aprobación | Simulador 75,83 % (91/120). Humanos: 0 filas | [`evaluacion/resultados/aprobaciones.json`](evaluacion/resultados/aprobaciones.json) |
@@ -38,7 +38,7 @@ El detalle y las advertencias (qué es simulado, qué falta) están en
 
 ```mermaid
 flowchart LR
-    UI["Chat Next.js"] --> AS["Asistente Grok 4.6"]
+    UI["Chat Next.js"] --> AS["Asistente Grok 4.7"]
     AS --> MCP["MCP: lecturas y crear_propuesta"]
     AS --> AUD["Auditor A2A"]
     MCP --> PG["PostgreSQL 17 + pgvector"]
@@ -140,8 +140,8 @@ pesos `ml/models/` y las corridas `ml/runs/` no se versionan.
 | Qué | Comando | Qué falta |
 |---|---|---|
 | Gates | `npm run lint`, `npm test`, `npm run build` | — |
-| Extracción base, v1 y v2 | `npm run eval:extraccion` (`evaluacion/evaluar_extraccion.py`) y `ml/comparar_versiones.py` | Columna Grok, si no hay `XAI_API_KEY` |
-| Citas | `npm run eval:citas` (`evaluacion/evaluar_citas.ts`) | Juez LLM, si no hay `XAI_API_KEY` |
+| Extracción base, v1 y v2 | `npm run eval:extraccion` (`evaluacion/evaluar_extraccion.py`) y `ml/comparar_versiones.py` | — (la columna Grok 4.7 requiere `XAI_API_KEY`) |
+| Citas | `npm run eval:citas` (`evaluacion/evaluar_citas.ts`) | — (el juez Grok 4.7 requiere `XAI_API_KEY`) |
 | Auditor | `npm run eval:auditor` (10 de D2 y 10 trampas nuevas, matriz 3×3). `npm test` sigue incluyendo los 10 de `tests/auditor/escenarios.test.ts` | — |
 | Aprobaciones | `npm run eval:aprobaciones` | Tasa humana: 0 filas hasta las sesiones |
 | Usuarios | Protocolo: [`evaluacion/PROTOCOLO_USUARIOS.md`](evaluacion/PROTOCOLO_USUARIOS.md). Plantilla: `evaluacion/sesiones/plantilla.csv` | Las sesiones |
@@ -176,7 +176,7 @@ Entrenar v1 de nuevo (misma línea que C3, 4 635 s en la 4060 de ese reporte):
 | S2 | Arquitectura, esqueleto, esquema, corpus, MCP de lectura, gates |
 | S3 | Grok, RAG híbrido con citas, QLoRA v1 (3,08 % → 76,92 %) |
 | S4 | Tarjeta, auditor A2A, trazas en Phoenix, perfiles y guardrails |
-| S5 | DPO v2 (83,08 %, intervalos solapados), suite en `evaluacion/`, este informe, la presentación y el guion. Grok y las sesiones con personas siguen pendientes |
+| S5 | DPO v2 (83,08 %, intervalos solapados con v1), Grok 4.7 (98,46 %, no solapa con v2), juez de citas (0,926), suite en `evaluacion/`, este informe, la presentación y el guion. Las sesiones con personas y el despliegue siguen pendientes |
 
 Plan: [`docs/PLAN_DESARROLLO.md`](docs/PLAN_DESARROLLO.md). Tope de entrega del curso: 30 de septiembre de 2026.
 

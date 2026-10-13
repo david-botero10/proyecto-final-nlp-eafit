@@ -8,6 +8,8 @@ import { ejecutarPropuesta, ErrorPropuesta } from "@/mcp/escrituras";
 import { decisionEntrada } from "@/mcp/esquemas";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const maxDuration = 120;
 
 type Contexto = { params: Promise<{ id: string }> };
 

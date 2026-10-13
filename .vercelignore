@@ -1,0 +1,21 @@
+# Solo se sube lo que necesita el build de Next.js.
+.env
+.env.*
+!.env.example
+/.venv/
+/.tmp/
+/.atl/
+/.next/
+/node_modules/
+/ml/
+/corpus/
+/data/
+/db/
+/docs/
+/informe/
+/evaluacion/
+/deploy/
+/odd/
+/taller4/
+/tests/
+*.log

@@ -6,6 +6,13 @@ import type {
   ListarEmpleadosEntrada,
 } from "./esquemas";
 
+// Token compartido con los servicios de modelos en Modal (deploy/modal).
+// Sin MODELOS_TOKEN (modo local) no se envía cabecera.
+function authModelos(): Record<string, string> {
+  const token = process.env.MODELOS_TOKEN;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 type FiltroEmpleado = {
   id: number | null;
   nombre: string | null;
@@ -213,7 +220,7 @@ async function embedPorHttp(
 ): Promise<number[] | null> {
   const respuesta = await fetch(`${urlEmbed(opciones)}/embed`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authModelos() },
     body: JSON.stringify({ textos: [consulta] }),
     signal: AbortSignal.timeout(timeoutMs),
   });
@@ -237,7 +244,7 @@ async function rerankPorHttp(
 ): Promise<number[] | null> {
   const respuesta = await fetch(`${urlEmbed(opciones)}/rerank`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authModelos() },
     body: JSON.stringify({ consulta, textos }),
     signal: AbortSignal.timeout(timeoutMs),
   });

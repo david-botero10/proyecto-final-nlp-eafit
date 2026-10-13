@@ -1,7 +1,7 @@
 import { createXai } from "@ai-sdk/xai";
 
 /** Modelo de chat si no hay RELEVO_MODELO. */
-export const MODELO_POR_DEFECTO = "grok-4.6";
+export const MODELO_POR_DEFECTO = "grok-4.7";
 
 /** La clave solo se lee de entorno; no se registra ni se devuelve. */
 export function claveConfigurada(): boolean {

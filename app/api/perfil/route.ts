@@ -6,6 +6,7 @@ import {
 } from "@/lib/memoria/perfiles";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 function jsonError(mensaje: string, status: number): Response {
   return Response.json({ error: mensaje }, { status });

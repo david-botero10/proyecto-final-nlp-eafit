@@ -52,7 +52,7 @@ def completar_xai(mensajes: list[dict]) -> str:
         raise RuntimeError("sin clave")
     cuerpo = json.dumps(
         {
-            "model": os.environ.get("XAI_MODEL", "grok-4.6"),
+            "model": os.environ.get("XAI_MODEL", "grok-4.7"),
             "messages": mensajes,
             "temperature": 0,
         }

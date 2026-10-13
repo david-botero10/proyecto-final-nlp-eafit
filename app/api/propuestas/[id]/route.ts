@@ -2,6 +2,7 @@ import { crearCliente } from "@/lib/db/cliente";
 import { leerPropuesta } from "@/mcp/escrituras";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 type Contexto = { params: Promise<{ id: string }> };
 

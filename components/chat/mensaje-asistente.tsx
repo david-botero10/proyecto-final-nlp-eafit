@@ -1,15 +1,20 @@
-import { TarjetaPropuesta } from "@/components/tarjeta-propuesta";
-import type { Propuesta } from "@/lib/tipos";
+"use client";
 
-export type ResultadoFuente = {
-  chunk_id: number;
-  ref: string | null;
-  fuente: string;
-  titulo: string;
-  url: string | null;
-  fragmento: string;
-  score: number;
-};
+import { Check, Copy } from "lucide-react";
+import { useCallback, useEffect, useId, useState } from "react";
+import { TarjetaPropuesta } from "@/components/tarjeta-propuesta";
+import { actividadDe, type ActividadHerramienta } from "@/lib/ui/herramientas";
+import type { Propuesta } from "@/lib/tipos";
+import { ActividadHerramientas } from "./actividad-herramientas";
+import {
+  PanelFuentes,
+  idFuente,
+  type ResultadoFuente,
+} from "./fuentes";
+import { Markdown } from "./markdown";
+
+export type { ResultadoFuente } from "./fuentes";
+export { PanelFuentes } from "./fuentes";
 
 export type ParteVista = {
   type: string;
@@ -17,7 +22,9 @@ export type ParteVista = {
   state?: string;
   toolName?: string;
   data?: unknown;
+  input?: unknown;
   output?: unknown;
+  errorText?: string;
 };
 
 const ETIQUETAS: Record<string, string> = {
@@ -134,97 +141,140 @@ function propuestasDe(parts: ParteVista[]): Propuesta[] {
   return propuestas;
 }
 
-function hrefSeguro(url: string | null): string | null {
-  if (!url) {
-    return null;
-  }
-  if (url.startsWith("https://") || url.startsWith("http://")) {
-    return url;
-  }
-  return null;
+function actividadesDe(parts: ParteVista[]): ActividadHerramienta[] {
+  return parts.flatMap((parte) => {
+    if (!esHerramienta(parte)) {
+      return [];
+    }
+    const actividad = actividadDe(parte);
+    return actividad ? [actividad] : [];
+  });
 }
 
 export function ChipIntencion({ intencion }: { intencion: string }) {
   const etiqueta = ETIQUETAS[intencion] ?? intencion;
   return (
-    <span className="inline-flex rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-500">
+    <span className="inline-flex rounded-full bg-sand px-2.5 py-0.5 text-[11.5px] font-medium text-muted">
       {etiqueta}
     </span>
   );
 }
 
-export function PanelFuentes({
-  resultados,
-}: {
-  resultados: ResultadoFuente[];
-}) {
-  if (resultados.length === 0) {
-    return null;
+function BotonCopiar({ texto }: { texto: string }) {
+  const [copiado, setCopiado] = useState(false);
+
+  useEffect(() => {
+    if (!copiado) {
+      return;
+    }
+    const temporizador = window.setTimeout(() => setCopiado(false), 1800);
+    return () => window.clearTimeout(temporizador);
+  }, [copiado]);
+
+  async function copiar() {
+    try {
+      await navigator.clipboard.writeText(texto);
+      setCopiado(true);
+    } catch {
+      // Sin permiso de portapapeles no hay nada más que hacer.
+    }
   }
+
   return (
-    <section aria-label="Fuentes" className="mt-3 border-t border-stone-200 pt-2">
-      <h2 className="text-xs font-medium uppercase tracking-wide text-stone-500">
-        Fuentes
-      </h2>
-      <ol className="mt-1 list-decimal space-y-1 pl-4 text-xs text-stone-600">
-        {resultados.map((resultado, indice) => {
-          const href = hrefSeguro(resultado.url);
-          return (
-            <li key={`${resultado.chunk_id}-${indice}`}>
-              <span className="font-medium text-stone-800">
-                {resultado.fuente}
-              </span>
-              {resultado.ref ? ` · ${resultado.ref}` : null}
-              {" · "}
-              {href ? (
-                <a
-                  href={href}
-                  className="underline decoration-stone-300 underline-offset-2"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {resultado.titulo}
-                </a>
-              ) : (
-                resultado.titulo
-              )}
-            </li>
-          );
-        })}
-      </ol>
-    </section>
+    <button
+      type="button"
+      aria-label={copiado ? "Copiado" : "Copiar respuesta"}
+      className="inline-flex items-center gap-1.5 rounded-fila px-2 py-1 text-xs font-medium text-subtle hover:bg-sand hover:text-ink"
+      onClick={() => void copiar()}
+    >
+      {copiado ? (
+        <Check size={14} aria-hidden="true" className="text-success" />
+      ) : (
+        <Copy size={14} aria-hidden="true" />
+      )}
+      <span aria-live="polite">{copiado ? "Copiado" : "Copiar"}</span>
+    </button>
   );
 }
 
-export function MensajeAsistente({ parts }: { parts: ParteVista[] }) {
+export function MensajeAsistente({
+  parts,
+  completo = true,
+}: {
+  parts: ParteVista[];
+  /** False mientras la respuesta aún se está generando (oculta las acciones). */
+  completo?: boolean;
+}) {
+  const prefijo = useId().replaceAll(":", "");
   const texto = parts
     .filter((parte) => parte.type === "text" && parte.text)
     .map((parte) => parte.text ?? "")
-    .join("");
+    .join("\n\n");
   const intencion = intencionDe(parts);
-  const aviso = indicadorDePartes(parts);
+  const actividades = actividadesDe(parts);
   const grupos = gruposFuentes(parts);
   const propuestas = propuestasDe(parts);
 
+  const [abierto, setAbierto] = useState(false);
+  const [resaltada, setResaltada] = useState<number | null>(null);
+
+  const alCitar = useCallback((numero: number) => {
+    setAbierto(true);
+    setResaltada(numero);
+  }, []);
+
+  useEffect(() => {
+    if (resaltada === null) {
+      return;
+    }
+    document
+      .getElementById(idFuente(`${prefijo}0`, resaltada))
+      ?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+    const temporizador = window.setTimeout(() => setResaltada(null), 2600);
+    return () => window.clearTimeout(temporizador);
+  }, [resaltada, prefijo]);
+
   return (
-    <div>
+    <div className="rounded-tarjeta border border-line bg-surface px-4 py-3.5 shadow-suave sm:px-5">
       {intencion ? (
-        <div className="mb-2">
+        <div className="mb-2.5">
           <ChipIntencion intencion={intencion} />
         </div>
       ) : null}
-      {texto ? <p className="whitespace-pre-wrap">{texto}</p> : null}
-      {aviso ? (
-        <p className="mt-2 text-xs text-stone-500" aria-live="polite">
-          {aviso}
-        </p>
+      <ActividadHerramientas actividades={actividades} />
+      {texto ? (
+        <Markdown
+          texto={texto}
+          conCitas={grupos.length > 0}
+          alCitar={alCitar}
+        />
       ) : null}
-      {grupos.map((grupo, indice) => (
-        <PanelFuentes key={indice} resultados={grupo} />
-      ))}
+      {grupos.map((grupo, indice) =>
+        indice === 0 ? (
+          <PanelFuentes
+            key={indice}
+            resultados={grupo}
+            prefijo={`${prefijo}0`}
+            abierto={abierto}
+            onAlternar={() => setAbierto((previo) => !previo)}
+            resaltada={resaltada}
+          />
+        ) : (
+          <PanelFuentes
+            key={indice}
+            resultados={grupo}
+            prefijo={`${prefijo}${indice}`}
+          />
+        ),
+      )}
       {propuestas.map((propuesta) => (
         <TarjetaPropuesta key={propuesta.propuesta_id} propuesta={propuesta} />
       ))}
+      {completo && texto ? (
+        <div className="mt-3 -mb-1 flex items-center gap-1">
+          <BotonCopiar texto={texto} />
+        </div>
+      ) : null}
     </div>
   );
 }
